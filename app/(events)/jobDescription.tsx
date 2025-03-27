@@ -1,9 +1,16 @@
 import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native'
-import React from 'react'
+import React, {useState} from 'react'
 
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
+
+
 const jobDescription = () => {
+  const [selected, setSelected] = useState(0);
+  
+    const Switch_Selected = async ( index : number) => {
+      setSelected(index);
+    }
   return (
     <View style={styles.container}>
       <View style={styles.topView}>
@@ -20,6 +27,37 @@ const jobDescription = () => {
           source={require('@/assets/images/anh.png')} 
         />
       </View>
+      <View style = {styles.jobTitleBox}>
+        <Text style={styles.jobTitleText}>Software Engineer</Text>
+      </View>
+      <View style ={styles.companyInfoBox}>
+        <Text style = {styles.companyInfoText}>GIAHU /</Text>
+        <Ionicons style = {styles.companyInfoText2} name='location' size={24}/>
+        <Text style = {styles.companyInfoText2}>US</Text>
+      </View>
+      <View style = {styles.tabs}>
+        <TouchableOpacity style={[styles.tabBox, selected === 0 ? styles.tabActive : styles.tabNormal]} onPress={() => Switch_Selected(0)}>
+          <Text style={[selected === 0 ? styles.tabActiveText : styles.tabNormalText]}>About</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.tabBox, selected === 1 ? styles.tabActive : styles.tabNormal]} onPress={() => Switch_Selected(1)}>
+        <Text style={[selected === 1 ? styles.tabActiveText : styles.tabNormalText]}>Qualification</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.tabBox, selected === 2 ? styles.tabActive : styles.tabNormal]} onPress={() => Switch_Selected(2)}>
+        <Text style={[selected === 2 ? styles.tabActiveText : styles.tabNormalText]}>Responsibility</Text>
+        </TouchableOpacity>
+      </View>
+      <View>
+        {selected === 0 ? (
+          <Text>1</Text>
+        )
+          : selected === 1 ?(
+            <Text>2</Text>
+          )
+          : (
+            <Text>3</Text>
+          )
+        }
+      </View>
     </View>
   )
 }
@@ -28,7 +66,6 @@ export default jobDescription
 
 const styles = StyleSheet.create({
   container: {
-    
     paddingHorizontal: 30,
   },
   topView: {
@@ -41,22 +78,75 @@ const styles = StyleSheet.create({
     width: 40,
     backgroundColor: '#e8e8e8',
     borderRadius: 4,
-    //giua ngang
     alignItems: 'center',
-    // giua doc
     justifyContent: 'center',
   },
   jobImage: {
-    height: 40,
-    width: 40,
+    height:'100%',
+    width: 100,
     alignContent: 'center',
     justifyContent: 'center',
   },
   jobImageContainer: {
-    height: '30%',
+    marginTop: 40,
+    height: 100,
     width: '100%',
     justifyContent: 'center',
     alignItems: "center",
     backgroundColor: 'black',
+    marginBottom: 20,
   },
-});
+  jobTitleBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  jobTitleText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  companyInfoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  companyInfoText: {
+    fontSize: 15,
+  },
+  companyInfoText2: {
+    fontSize: 15,
+    textShadowColor: 'black',
+    color: '#a9a9a9'
+  },
+  tabs:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    alignItems: "center",
+    gap: 10,
+  },
+  tabBox: {
+    borderWidth: 1,
+    borderRadius: 10,
+    height: 40,
+    width: "100%",
+    justifyContent: 'center',
+    alignItems: "center",
+    flex: 1,
+    
+  },
+  tabNormal:{
+    backgroundColor: '#F1F2F7'
+  },
+  tabNormalText:{
+    color: '#C8C9CD'
+  },
+  tabActive:{
+    backgroundColor: '#2F264F'
+  },
+  tabActiveText:{
+    color: 'white',
+  }
+})

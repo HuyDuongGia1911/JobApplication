@@ -46,17 +46,28 @@ const jobDescription = () => {
         <Text style={[selected === 2 ? styles.tabActiveText : styles.tabNormalText]}>Responsibility</Text>
         </TouchableOpacity>
       </View>
-      <View>
+      <View style = {styles.contentTab}>
         {selected === 0 ? (
-          <Text>1</Text>
+          <View>
+            <Text>1</Text>
+            <Text>1</Text>
+            <Text>1</Text>
+            <Text>1</Text>
+            <Text>1</Text>
+          </View>
         )
           : selected === 1 ?(
             <Text>2</Text>
+            
           )
           : (
             <Text>3</Text>
           )
         }
+      </View>
+      <View>
+        <TouchableOpacity><Text>Tim</Text></TouchableOpacity>
+        <TouchableOpacity><Text>Apply for job</Text></TouchableOpacity>
       </View>
     </View>
   )
@@ -67,6 +78,7 @@ export default jobDescription
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 30,
+    backgroundColor: '#fff',
   },
   topView: {
     flexDirection: 'row',
@@ -128,7 +140,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   tabBox: {
-    borderWidth: 1,
+    borderWidth: 0,
     borderRadius: 10,
     height: 40,
     width: "100%",
@@ -138,15 +150,22 @@ const styles = StyleSheet.create({
     
   },
   tabNormal:{
-    backgroundColor: '#F1F2F7'
+    backgroundColor: '#EEEEEE'
   },
   tabNormalText:{
-    color: '#C8C9CD'
+    color: '#AAAAAA'
   },
   tabActive:{
     backgroundColor: '#2F264F'
   },
   tabActiveText:{
     color: 'white',
+  },
+
+  contentTab:{
+    backgroundColor: '#EEEEEE',
+    borderRadius: 10,
+    padding: 10,
+    height: 600,
   }
 })

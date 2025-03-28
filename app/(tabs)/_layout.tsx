@@ -10,10 +10,10 @@ const Layout = () => {
       )
     }}/>
   
-    <Tabs.Screen name="partime" options={{
-      title: "partime",
+    <Tabs.Screen name="person" options={{
+      title: "person",
       tabBarIcon: ({color, focused}) => (
-      <Ionicons name = {focused ? "time" : "time-outline"} color = {color} size={24}/>
+      <Ionicons name = {focused ? "notifications" : "notifications-outline"} color = {color} size={24}/>
       )
     }}/>
   </Tabs>);

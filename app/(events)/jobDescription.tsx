@@ -63,22 +63,20 @@ const jobDescription = () => {
       </View>
       <View style = {styles.contentTab}>
         {selected === 0 ? (
-          <View>
-            <Text>test</Text>
-          </View>
+          <Text style={styles.descriptionContent}>1</Text>
         )
           : selected === 1 ?(
-            <Text>2</Text>
+            <Text style={styles.descriptionContent}>2</Text>
             
           )
           : (
-            <Text>3</Text>
+            <Text style={styles.descriptionContent}>3</Text>
           )
         }
       </View>
       <View style = {styles.bottomContainer}>
         <TouchableOpacity style={styles.heartContainer}>
-          <Ionicons  name='heart-outline' size={50} color={'#A3A09F'}/>
+          <Ionicons  name='heart-outline' style={styles.iconHeart}/>
         </TouchableOpacity>
         <TouchableOpacity style={styles.applyContainer}>
           
@@ -164,8 +162,8 @@ const styles = StyleSheet.create({
   },
   tabBox: {
     borderWidth: 0,
-    borderRadius: 10,
-    height: 40,
+    borderRadius: 15,
+    height: 50,
     width: "100%",
     justifyContent: 'center',
     alignItems: "center",
@@ -188,8 +186,13 @@ const styles = StyleSheet.create({
   contentTab:{
     backgroundColor: '#EEEEEE',
     borderRadius: 10,
-    padding: 10,
+    padding: 14,
     height: 600,
+  },
+  descriptionContent:{
+    fontSize: 15,    
+    color: 'black',
+    textAlign: 'justify',
   },
   companyLocation:{
     justifyContent: 'center',
@@ -206,7 +209,8 @@ const styles = StyleSheet.create({
   jobInfoBox:{
     backgroundColor: 'blue',
     borderWidth: 0,
-    borderRadius: 4,
+    borderRadius: 15,
+    padding: 5,
   },
   jobInfoText:{
     fontSize: 15,
@@ -228,18 +232,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     width: '100%',
+    marginTop: 20,
   },
   heartContainer:{
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#A3A09F',
-    borderRadius: 10,
+    borderRadius: 20,
+    width: 80,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconHeart:{
+    fontSize: 50,
+    color: '#A3A09F',
   },
   applyContainer:{
     width: '85%',
-    height: 50,
-    
+    height: 80,
+    fontFamily: 'bioRhyme',
     backgroundColor: '#F97459',
-    borderRadius:10,
+    borderRadius:20,
     justifyContent: 'center',
     alignItems: 'center',
     

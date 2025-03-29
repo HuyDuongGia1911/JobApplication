@@ -13,28 +13,43 @@ const jobDescription = () => {
     }
   return (
     <View style={styles.container}>
-      <View style={styles.topView}>
-        <TouchableOpacity style={styles.buttons} onPress={() => router.push("/")}>
-          <Ionicons name='arrow-back' size={24}/>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.buttons} onPress={() => router.push("/")}>
-          <Ionicons name='share-social' size={24}/>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.jobImageContainer}>
-        <Image 
-          style = {styles.jobImage}
-          source={require('@/assets/images/anh.png')} 
-        />
-      </View>
-      <View style = {styles.jobTitleBox}>
-        <Text style={styles.jobTitleText}>Software Engineer</Text>
-      </View>
-      <View style ={styles.companyInfoBox}>
-        <Text style = {styles.companyInfoText}>GIAHU /</Text>
-        <Ionicons style = {styles.companyInfoText2} name='location' size={24}/>
-        <Text style = {styles.companyInfoText2}>US</Text>
-      </View>
+        <View style={styles.topView}>
+          <TouchableOpacity style={styles.buttons} onPress={() => router.push("/")}>
+            <Ionicons name='arrow-back' size={24}/>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.buttons} onPress={() => router.push("/")}>
+            <Ionicons name='share-social' size={24}/>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.headerContainer}>
+        <View style={styles.jobImageContainer}>
+          <Image 
+            style = {styles.jobImage}
+            source={require('@/assets/images/anh.png')} 
+          />
+        </View>
+        <View style = {styles.companyName}>
+          <Text style={styles.companyNameText}>GIAHU</Text>
+        </View>
+        <View style={styles.jobInfoContainer}>
+          <View style={styles.jobInfoBox}>
+            <Text style={styles.jobInfoText}>Software Engineer</Text>
+          </View>
+          <View style={styles.jobInfoBox}>
+          <Text style={styles.jobInfoText}>Full-time</Text>
+          </View>
+        </View>
+        <View style ={styles.companyInfoBox}>
+          <View>
+            <Text style={styles.companyInfoText}>$ 160.000/Year</Text> 
+          </View>
+          <View style={styles.companyLocation}> 
+            <Text style = {styles.companyInfoText}>TDM /</Text>
+            <Ionicons style = {styles.companyInfoText2} name='location' size={24}/>
+            <Text style = {styles.companyInfoText2}>BinhDuong</Text>
+          </View>
+        </View>
+        </View>
       <View style = {styles.tabs}>
         <TouchableOpacity style={[styles.tabBox, selected === 0 ? styles.tabActive : styles.tabNormal]} onPress={() => Switch_Selected(0)}>
           <Text style={[selected === 0 ? styles.tabActiveText : styles.tabNormalText]}>About</Text>
@@ -49,11 +64,7 @@ const jobDescription = () => {
       <View style = {styles.contentTab}>
         {selected === 0 ? (
           <View>
-            <Text>1</Text>
-            <Text>1</Text>
-            <Text>1</Text>
-            <Text>1</Text>
-            <Text>1</Text>
+            <Text>test</Text>
           </View>
         )
           : selected === 1 ?(
@@ -65,9 +76,15 @@ const jobDescription = () => {
           )
         }
       </View>
-      <View>
-        <TouchableOpacity><Text>Tim</Text></TouchableOpacity>
-        <TouchableOpacity><Text>Apply for job</Text></TouchableOpacity>
+      <View style = {styles.bottomContainer}>
+        <TouchableOpacity style={styles.heartContainer}>
+          <Ionicons  name='heart-outline' size={50} color={'#A3A09F'}/>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.applyContainer}>
+          
+            <Text style = {styles.applyText}>Apply Now</Text>
+          
+        </TouchableOpacity>
       </View>
     </View>
   )
@@ -88,7 +105,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     height: 40,
     width: 40,
-    backgroundColor: '#e8e8e8',
+    backgroundColor: 'white',
     borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
@@ -98,34 +115,40 @@ const styles = StyleSheet.create({
     width: 100,
     alignContent: 'center',
     justifyContent: 'center',
+    borderRadius: 50,
   },
   jobImageContainer: {
-    marginTop: 40,
+    marginTop: 10,
     height: 100,
     width: '100%',
     justifyContent: 'center',
     alignItems: "center",
-    backgroundColor: 'black',
-    marginBottom: 20,
+    backgroundColor: '#EBF2FC',
+    
+    
+    
   },
-  jobTitleBox: {
+  companyName: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    
+    backgroundColor: '#EBF2FC',
   },
-  jobTitleText: {
+  companyNameText: {
     fontSize: 20,
     fontWeight: 'bold',
   },
   companyInfoBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    
+  
   },
   companyInfoText: {
     fontSize: 15,
+    fontWeight: 'bold',
   },
   companyInfoText2: {
     fontSize: 15,
@@ -167,5 +190,62 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     height: 600,
-  }
+  },
+  companyLocation:{
+    justifyContent: 'center',
+    flexDirection: 'row', 
+    backgroundColor: '#EBF2FC',
+  },
+  jobInfoContainer:{
+    flexDirection: 'row',
+    justifyContent: 'center',
+    
+    gap: 10,
+    
+  },
+  jobInfoBox:{
+    backgroundColor: 'blue',
+    borderWidth: 0,
+    borderRadius: 4,
+  },
+  jobInfoText:{
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  headerContainer:{
+    marginBottom: 20,
+    borderBottomRightRadius:10,
+    borderBottomLeftRadius:10,
+    backgroundColor: '#EBF2FC',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  bottomContainer:{
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
+    alignItems: "center",
+    gap: 10,
+    width: '100%',
+  },
+  heartContainer:{
+    borderWidth: 1,
+    borderColor: '#A3A09F',
+    borderRadius: 10,
+  },
+  applyContainer:{
+    width: '85%',
+    height: 50,
+    
+    backgroundColor: '#F97459',
+    borderRadius:10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  },
+  applyText:{
+    fontSize:25,
+    color: 'white',
+  },
 })

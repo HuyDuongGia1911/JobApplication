@@ -1,23 +1,43 @@
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, FlatList } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import Search from '@/components/Search'
 import { router } from 'expo-router'
+import { collection_job_id, databases, databases_id } from '@/lib/appwrite'
 
 const index = () => {
   const [selected, setSelected] = useState(0);
+  //tao bien luu du lieu theo dang mang
+
+  const [dataJob, setDataJob] = useState<any>([]);
+
+
+  useEffect(() => {
+      load_data();
+  },[])
+
 
   const Switch_Selected = async ( index : number) => {
     setSelected(index);
+
   }
-  const sampleData = [
-    { id: '1', title: 'Software Engineer' , corp: 'GIAHU',image: require('@/assets/images/anh.png'), nation: 'US'},
-    { id: '2', title: 'Data Analyst', corp: 'GIAHU', image: require('@/assets/images/anh.png'), nation: 'US'},
-    { id: '3', title: 'Product Manager', corp: 'GIAHU', image: require('@/assets/images/anh.png'), nation: 'US'},
-    { id: '4', title: 'UX Designer' , corp: 'GIAHU', image: require('@/assets/images/anh.png'), nation: 'US'},
-    { id: '5', title: 'Cybersecsurity Specialist' , corp: 'GIAHU', image: require('@/assets/images/anh.png')},
-    { id: '6', title: 'AI Engineer', corp: 'GIAHU', image: require('@/assets/images/anh.png'), nation: 'US'},
-  ];
+  
+  //tao ham lay du lieu, api
+  const load_data = async () => {
+      try{
+        const result = await databases.listDocuments(
+          databases_id, // databaseId
+          collection_job_id, // collectionId
+        );
+          setDataJob(result.documents);
+      
+      }
+      catch(error){
+        console.log(error);
+      }
+  }
+
+
   
   
   
@@ -25,6 +45,10 @@ const index = () => {
   return (
     <View style={styles.container}>
       <View style={styles.topView}>
+      {/* <TouchableOpacity style={styles.menu} onPress={click}>
+        <Text>test</Text>
+        </TouchableOpacity> */}
+
         <TouchableOpacity style={styles.menu} onPress={() => router.push('/(events)/jobDescription')}>
         <Ionicons name = 'menu' color={'black'} size={24}/>
         </TouchableOpacity>
@@ -61,11 +85,11 @@ const index = () => {
                     </TouchableOpacity>
             </View>
             <FlatList 
-              data={sampleData}
-              keyExtractor={(item) => item.id}
+              data={dataJob}
+              keyExtractor={(item) => item.$id}
               renderItem={({ item }) => (
                 <TouchableOpacity style={styles.jobCardsContainer}>
-                  <Image style={styles.jobImages} source={item.image}/>
+                  <Image style={styles.jobImages} source={{uri: item.image}}/>
                   <Text style={styles.jobCorp}>Cong ty {item.corp}</Text>
                   <View style={styles.jobCardsDescription}>
                     <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
@@ -84,10 +108,10 @@ const index = () => {
                     </TouchableOpacity>
             </View>
             <FlatList 
-              data={sampleData.slice(0, 4)}
+              data={dataJob.slice(0, 4)}
               renderItem={({ item }) => (
                 <TouchableOpacity style={styles.jobCardsContainer2}>
-                  <Image style={styles.jobImages} source={item.image}/>
+                  <Image style={styles.jobImages} source={{uri: item.image}}/>
                   <View style={styles.jobCardsDescription2}>
                       <Text style={styles.jobCorp}>Cong ty {item.corp}</Text>
                       <View style={styles.jobCardsDescription}>

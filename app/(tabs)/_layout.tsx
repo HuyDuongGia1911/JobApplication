@@ -5,7 +5,7 @@ const Layout = () => {
     <Tabs.Screen name="index" options={{
       headerShown: false,
       tabBarIcon: ({color, focused}) => (
-      <Ionicons name={focused ? "stopwatch" : "stopwatch-outline"} color={color} size={24}/>
+      <Ionicons name={focused ? "home" : "home-outline"} color={color} size={24}/>
 
       )
     }}/>

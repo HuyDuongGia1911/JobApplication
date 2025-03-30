@@ -15,10 +15,10 @@ const Layout = () => {
       <Ionicons name = {focused ? "chatbubble-ellipses" : "chatbubble-ellipses-outline"} color = {color} size={24}/>
       )
     }}/>
-    <Tabs.Screen name="notification" options={{
-      title: "notification",
+    <Tabs.Screen name="job" options={{
+      title: "job",
       tabBarIcon: ({color, focused}) => (
-      <Ionicons name = {focused ? "notifications" : "notifications-outline"} color = {color} size={24}/>
+      <Ionicons name = {focused ? "file-tray-full" : "file-tray-full-outline"} color = {color} size={24}/>
       )
     }}/>
     <Tabs.Screen name="person" options={{

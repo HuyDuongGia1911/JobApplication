@@ -1,14 +1,21 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const message = () => {
+const Message = () => {
   return (
     <View>
-      <Text>message</Text>
+      <Text>Message</Text>
     </View>
+
   )
 }
 
-export default message
+export default Message
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+container:{
+    fontSize: 20,
+    fontWeight: 'bold',
+}
+
+})

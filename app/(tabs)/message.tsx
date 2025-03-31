@@ -5,11 +5,11 @@ import { Ionicons } from '@expo/vector-icons'
 const Message = () => {
   
   const users =[
-    { id: '1', name: 'Hoang Bao1', status:'Online', lastSeen:'3 day ago'},
-    { id: '2', name: 'Hoang Bao2', status:'Offline', lastSeen:'12:00 PM'},
-    { id: '3', name: 'Hoang Bao3', status:'Online', lastSeen:''},
-    { id: '4', name: 'Hoang Bao4', status:'Offline', lastSeen:'1 day ago'},
-    { id: '5', name: 'Hoang Bao5', status:'Online', lastSeen:''},
+    { id: '1', name: 'Hoang Bao 1', status:'Online', lastSeen:'3 day ago'},
+    { id: '2', name: 'Hoang Bao 2', status:'Offline', lastSeen:'12 min ago'},
+    { id: '3', name: 'Hoang Bao 3', status:'Online', lastSeen:''},
+    { id: '4', name: 'Hoang Bao 4', status:'Offline', lastSeen:'1 day ago'},
+    { id: '5', name: 'Hoang Bao 5', status:'Online', lastSeen:''},
   ]
   const handleUserPress = (userId: string)=> {
     console.log('id:', userId);
@@ -28,23 +28,21 @@ const Message = () => {
       <ScrollView style={styles.contentContainer}>
         {users.map((user) =>(
           <TouchableOpacity key ={user.id} style={styles.userItem} onPress={() => handleUserPress(user.id)} activeOpacity={0.7}>
-            <View>
-                <View style={styles.userInfo}>
-                    <View style={styles.avatar}>
+
+              <View style={styles.userInfo}>
+                  <View style={styles.avatar}>
                       <Text style={styles.userName}> {user.name} </Text>
-                        <View>
-                          <Text>
+
+                        <View style={styles.statusContainer} >
+                          <Text style={[styles.statusText, user.status == 'Online' ? styles.online :styles.offline]}>
                             {user.status}
                           </Text>
-                          <Text>
-                            {user.lastSeen}
-                          </Text>
+                            {user.lastSeen && <Text style={styles.lastSeen}>{user.lastSeen} </Text>}
+
                         </View>
-                   </View>
-                </View>
-            </View>
-            
-            
+                 </View>
+              </View>
+              
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -53,7 +51,7 @@ const Message = () => {
   )
 }
 
-export default Message
+
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -91,9 +89,20 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   userItem:{
-    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'F5F5F5',
+    borderBottomColor: '#E0E0E0',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   
   userInfo:{
@@ -110,6 +119,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     marginBottom: 4,
-  }
-
+  },
+  statusContainer:{
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+  },
+  statusText:{
+  fontSize:13,
+  color: 'green',
+ },
+  online:{
+    color: 'green',
+  },
+  offline:{
+    color: 'red',
+  },
+  lastSeen:{
+    fontSize: 12,
+    color: '#888',
+    marginLeft: 5,
+  },
 })
+
+export default Message

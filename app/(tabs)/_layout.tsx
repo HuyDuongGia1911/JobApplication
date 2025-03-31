@@ -10,6 +10,7 @@ const Layout = () => {
       )
     }}/>
     <Tabs.Screen name="message" options={{
+      headerShown: false,
       title: "Message",
       tabBarIcon: ({color, focused}) => (
       <Ionicons name = {focused ? "chatbubble-ellipses" : "chatbubble-ellipses-outline"} color = {color} size={24}/>

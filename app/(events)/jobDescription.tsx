@@ -1,9 +1,10 @@
 import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native'
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-
+import { collection_job_id, databases, databases_id } from '@/lib/appwrite'
+import { useLocalSearchParams } from 'expo-router';
 
 const jobDescription = () => {
   const [selected, setSelected] = useState(0);
@@ -11,6 +12,30 @@ const jobDescription = () => {
     const Switch_Selected = async ( index : number) => {
       setSelected(index);
     }
+    const { jobId } = useLocalSearchParams(); // Nhận jobId từ route params
+    const [dataJob, setDataJob] = useState<any>(null);
+  
+    useEffect(() => {
+      if (jobId) {
+        load_data(jobId as string);
+      }
+    }, [jobId]);
+    
+  
+    const load_data = async (id: string) => {
+
+      try {
+        const result = await databases.getDocument(
+          databases_id,  // databaseId
+          collection_job_id,  // collectionId
+          id // Lấy công việc theo ID
+        );
+        setDataJob(result);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  if (!dataJob) return <Text>Loading...</Text>;
   return (
     <View style={styles.container}>
         <View style={styles.topView}>
@@ -25,28 +50,31 @@ const jobDescription = () => {
         <View style={styles.jobImageContainer}>
           <Image 
             style = {styles.jobImage}
-            source={require('@/assets/images/anh.png')} 
+            source={{uri:dataJob.image}} 
           />
         </View>
         <View style = {styles.companyName}>
-          <Text style={styles.companyNameText}>GIAHU</Text>
+          <Text style={styles.companyNameText}>{dataJob?.corp_name}</Text>
         </View>
         <View style={styles.jobInfoContainer}>
           <View style={styles.jobInfoBox}>
-            <Text style={styles.jobInfoText}>Software Engineer</Text>
+            <Text style={styles.jobInfoText}>{dataJob?.title}</Text>
           </View>
           <View style={styles.jobInfoBox}>
-          <Text style={styles.jobInfoText}>Full-time</Text>
+          <Text style={styles.jobInfoText}> {dataJob?.jobTypes?.join("/ ") || "No Job Type"}</Text>
+          </View>
+          <View style={styles.jobInfoBox}>
+            <Text style={styles.jobInfoText}>{dataJob?.jobCategories || "No Job Category"}</Text>
           </View>
         </View>
         <View style ={styles.companyInfoBox}>
           <View>
-            <Text style={styles.companyInfoText}>$ 160.000/Year</Text> 
+            <Text style={styles.companyInfoText}>$ {dataJob?.salary}</Text> 
           </View>
           <View style={styles.companyLocation}> 
-            <Text style = {styles.companyInfoText}>TDM /</Text>
+            <Text style = {styles.companyInfoText}>{dataJob?.city} /</Text>
             <Ionicons style = {styles.companyInfoText2} name='location' size={24}/>
-            <Text style = {styles.companyInfoText2}>BinhDuong</Text>
+            <Text style = {styles.companyInfoText2}>{dataJob?.nation || "No Nation"}</Text>
           </View>
         </View>
         </View>
@@ -63,14 +91,18 @@ const jobDescription = () => {
       </View>
       <View style = {styles.contentTab}>
         {selected === 0 ? (
-          <Text style={styles.descriptionContent}>1</Text>
+          <View>
+            <Text style={styles.descriptionContent}>{dataJob.corp_description}</Text>
+            <Text style={styles.descriptionContent}>{dataJob.skills_required}</Text>
+            <Text style={styles.descriptionContent}>{dataJob.responsibilities}</Text>
+          </View>
         )
           : selected === 1 ?(
-            <Text style={styles.descriptionContent}>2</Text>
+            <Text style={styles.descriptionContent}>{dataJob.skills_required}</Text>
             
           )
           : (
-            <Text style={styles.descriptionContent}>3</Text>
+            <Text style={styles.descriptionContent}>{dataJob.responsibilities}</Text>
           )
         }
       </View>

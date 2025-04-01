@@ -88,9 +88,12 @@ const index = () => {
               data={dataJob}
               keyExtractor={(item) => item.$id}
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.jobCardsContainer}>
-                  <Image style={styles.jobImages} source={{uri: item.image}}/>
-                  <Text style={styles.jobCorp}>Cong ty {item.corp}</Text>
+                <TouchableOpacity 
+                  style={styles.jobCardsContainer} 
+                  onPress={() => router.push({ pathname: "/jobDescription", params: { jobId: item.$id } })}
+                >
+                  <Image style={styles.jobImages} source={{ uri: item.image }} />
+                  <Text style={styles.jobCorp}>Công ty {item.corp_name}</Text>
                   <View style={styles.jobCardsDescription}>
                     <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
                     <Text style={styles.jobNation}>{item.nation}</Text>
@@ -113,7 +116,7 @@ const index = () => {
                 <TouchableOpacity style={styles.jobCardsContainer2}>
                   <Image style={styles.jobImages} source={{uri: item.image}}/>
                   <View style={styles.jobCardsDescription2}>
-                      <Text style={styles.jobCorp}>Cong ty {item.corp}</Text>
+                      <Text style={styles.jobCorp}>Cong ty {item.corp_name}</Text>
                       <View style={styles.jobCardsDescription}>
                         <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
                         <Text style={styles.jobNation}>{item.nation}</Text>

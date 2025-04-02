@@ -31,6 +31,7 @@ const jobDescription = () => {
           id // Lấy công việc theo ID
         );
         setDataJob(result);
+        console.log(result);
       } catch (error) {
         console.log(error);
       }
@@ -61,10 +62,10 @@ const jobDescription = () => {
             <Text style={styles.jobInfoText}>{dataJob?.title}</Text>
           </View>
           <View style={styles.jobInfoBox}>
-          <Text style={styles.jobInfoText}> {dataJob?.jobTypes?.join("/ ") || "No Job Type"}</Text>
+          {/* <Text style={styles.jobInfoText}> {dataJob?.jobTypes?.join("/ ") || "No Job Type"}</Text> */}
           </View>
           <View style={styles.jobInfoBox}>
-            <Text style={styles.jobInfoText}>{dataJob?.jobCategories || "No Job Category"}</Text>
+            {/* <Text style={styles.jobInfoText}>{dataJob?.jobCategories || "No Job Category"}</Text> */}
           </View>
         </View>
         <View style ={styles.companyInfoBox}>

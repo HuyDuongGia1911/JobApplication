@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 const Layout = () => {
   return (<Tabs>
     <Tabs.Screen name="index" options={{
+      title: "Home",
       headerShown: false,
       tabBarIcon: ({color, focused}) => (
       <Ionicons name={focused ? "home" : "home-outline"} color={color} size={24}/>

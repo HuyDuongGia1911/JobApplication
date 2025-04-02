@@ -112,6 +112,7 @@ const index = () => {
             </View>
             <FlatList 
               data={dataJob.slice(0, 4)}
+              keyExtractor={(item) => item.$id}
               renderItem={({ item }) => (
                 <TouchableOpacity style={styles.jobCardsContainer2}>
                   <Image style={styles.jobImages} source={{uri: item.image}}/>
@@ -124,7 +125,6 @@ const index = () => {
                   </View>
                 </TouchableOpacity>
               )}
-              keyExtractor={(item) => item.id}
               style={styles.flatlistCustom}
             />
           </View>

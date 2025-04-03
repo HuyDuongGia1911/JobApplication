@@ -5,7 +5,7 @@ const Job = () => {
   return (
     <View style={styles.container}>
       <View>
-        <Text style={styles.text}>Job</Text>
+        <Text style={styles.text}>Jobs</Text>
       </View>
     </View>
   )

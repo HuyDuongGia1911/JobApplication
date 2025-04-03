@@ -55,17 +55,16 @@ const jobDescription = () => {
           />
         </View>
         <View style = {styles.companyName}>
+
+          <Text style={styles.companyNameText}>{dataJob?.title}</Text>
           <Text style={styles.companyNameText}>{dataJob?.corp_name}</Text>
         </View>
         <View style={styles.jobInfoContainer}>
           <View style={styles.jobInfoBox}>
-            <Text style={styles.jobInfoText}>{dataJob?.title}</Text>
+            <Text style={styles.jobInfoText}>{dataJob?.jobTypes?.type_name || "No Job Type"}</Text> 
           </View>
           <View style={styles.jobInfoBox}>
-          {/* <Text style={styles.jobInfoText}> {dataJob?.jobTypes?.join("/ ") || "No Job Type"}</Text> */}
-          </View>
-          <View style={styles.jobInfoBox}>
-            {/* <Text style={styles.jobInfoText}>{dataJob?.jobCategories || "No Job Category"}</Text> */}
+            <Text style={styles.jobInfoText}>{dataJob?.jobCategories?.category_name || "No Job Category"}</Text>
           </View>
         </View>
         <View style ={styles.companyInfoBox}>
@@ -160,7 +159,7 @@ const styles = StyleSheet.create({
     
   },
   companyName: {
-    flexDirection: 'row',
+    
     alignItems: 'center',
     justifyContent: 'center',
     

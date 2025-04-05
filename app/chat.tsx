@@ -6,7 +6,6 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   FlatList,
   Keyboard,
 } from 'react-native';
@@ -22,91 +21,106 @@ type MessageType = {
 
 const Chat = () => {
   const router = useRouter();
-  const {userId, userName}= useLocalSearchParams<{
+  const { userId, userName } = useLocalSearchParams<{
     userId: string;
     userName: string;
   }>();
 
-const [message, setMessage] = useState('');
-const [messages, setMessages] = useState<MessageType[]> ([
-  { id: '1', text: 'mày cút ', role: 'Recruiter' },
-  { id: '2', text: 'chào tôi muốn ứng tuyển', role: 'Candidate' },
-]);
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<MessageType[]>([
+    { id: '1', text: 'Chào! tao  là nhà tuyển dụng!', role: 'Recruiter' },
+  ]);
 
-const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<FlatList>(null);
 
-const handleSendMessage =() =>
-{
-  if (message.trim()==='') return;
+  const handleSendMessage = () => {
+    if (message.trim() === '') return;
 
-  const newMessage: MessageType = {
-    id: Date.now().toString(),
-    text: message.trim(),
-    role: 'Candidate',
-  };
+    // Kiểm tra để đảm bảo người tìm việc chỉ có thể gửi tin nhắn khi nhà tuyển dụng đã gửi tin nhắn đầu tiên
+    const hasRecruiterMessage = messages.some(msg => msg.role === 'Recruiter');
 
-  setMessages((prev) => [...prev, newMessage]);
-  setMessage(''); 
+    if (userId !== 'Recruiter' && !hasRecruiterMessage) {
+      alert('Bạn phải đợi nhà tuyển dụng gửi tin nhắn trước.');
+      return;
+    }
 
-  setTimeout(() => {
-    flatListRef.current?.scrollToEnd({ animated: true});
+    const newMessage: MessageType = {
+      id: Date.now().toString(),
+      text: message.trim(),
+      role: 'Candidate',
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setMessage('');
+
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
     }, 100);
 
-    Keyboard.dismiss();   
-};
+    Keyboard.dismiss();
+  };
 
-const renderMessage = ({item}: { item: MessageType}) => {
-  const isUser = item.role === 'Candidate';
-  return(
-    <View
-      style ={[styles.messageBubble,
-        isUser ? styles.userBubble : styles.recruiterBubble,
-      ]}>
-      <Text style={styles.messageText}> {item.text} </Text>
+  const renderMessage = ({ item }: { item: MessageType }) => {
+    const isUser = item.role === 'Candidate';
+    return (
+      <View
+        style={[
+          styles.messageBubble,
+          isUser ? styles.userBubble : styles.recruiterBubble,
+        ]}
+      >
+        <Text style={styles.messageText}>{item.text}</Text>
       </View>
+    );
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+    >
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <TouchableOpacity style={styles.back_btn} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
+        <Text style={styles.header_username}>{userName || 'Chat'}</Text>
+      </View>
+
+      {/* Tin nhắn */}
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={renderMessage}
+        contentContainerStyle={styles.messageContainer}
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+      />
+
+      {/* Nhập tin nhắn */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.textInput}
+          value={message}
+          onChangeText={setMessage}
+          placeholder="Nhập tin nhắn..."
+          multiline
+        />
+        <TouchableOpacity style={styles.send_btn} onPress={handleSendMessage}>
+          <Ionicons name="send" size={24} color="#007AFF" />
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
-};
-return(
-  <KeyboardAvoidingView
-
-  >
-    {/* Header */}
-    <View style= {styles.headerContainer}>
-      <TouchableOpacity style={styles.back_btn} onPress = {() => router.back()}>
-        <Ionicons name ='arrow-back' size={24} color = "black"> </Ionicons>
-      </TouchableOpacity>
-      <Text style ={styles.header_username}> {userName}</Text>
-    </View>
-
-    {/* Tin nhắn */}
-    <FlatList
-    ref={flatListRef}
-    data = {messages}
-    keyExtractor={(item) => item.id}
-    renderItem={renderMessage}
-    contentContainerStyle = {styles.messageContainer}
-    onContentSizeChange = {() => flatListRef.current?.scrollToEnd({ animated: true})}
-    />
-  
-      {/* Nhap tin nhan */}{}
-
-
-  </KeyboardAvoidingView>
-)
-
-
-
-
-
 };
 
 const styles = StyleSheet.create({
-
-  container:{
+  container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
-  headerContainer:{
+  headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F9F9FB',
@@ -118,37 +132,71 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 1,
   },
-  back_btn:{
-    width: 30,
-    height: 30,
+  back_btn: {
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header_username:{
-    fontSize: 18,
+  header_username: {
+    fontSize: 20,
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
   },
-  messageContainer:{
+  messageContainer: {
     padding: 15,
     flexGrow: 1,
     justifyContent: 'flex-end',
-    
   },
-
-  messageBubble:{
-    padding: 10,
+  messageBubble: {
     maxWidth: '80%',
     paddingVertical: 8,
-    borderRadius: 20,
-    marginVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    marginVertical: 4,
   },
-  userBubble:{
+  userBubble: {
     alignSelf: 'flex-end',
-    
-  }
-
+    backgroundColor: '#007AFF',
+    borderBottomRightRadius: 0,
+  },
+  recruiterBubble: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#E5E5EA',
+    borderBottomLeftRadius: 0,
+  },
+  messageText: {
+    fontSize: 17,
+    color: 'black',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    padding: 10,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  textInput: {
+    flex: 1,
+    minHeight: 40,
+    maxHeight: 100,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    fontSize: 16,
+    backgroundColor: '#F9F9F9',
+    marginRight: 10,
+  },
+  send_btn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default Chat;

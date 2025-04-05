@@ -21,6 +21,7 @@ const Message = () => {
     });
   };
   
+  
 
   return (
     <View style={styles.mainContainer}>

@@ -1,35 +1,75 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Button, Alert } from 'react-native';
-import { router, useRouter } from 'expo-router';
-import { account, ID } from '../../lib/appwrite';
+import {
+  View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet
+} from 'react-native';
+import { router } from 'expo-router';
+import { account } from '../../lib/appwrite';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    try {
-        console.log(password, email)
-        await account.createEmailPasswordSession(email, password);
-        
-        router.replace('/(tabs)/person');
-    } catch (error: any) {
-        console.log('Error:', error);
+    if (!email || !password) return;
 
-        Alert.alert('Login failed', error.message);
+    setLoading(true);
+    try {
+      await account.createEmailPasswordSession(email, password);
+      router.replace('/(tabs)/person');
+    } catch (error: any) {
+      alert('Login failed: ' + error.message);
+    } finally {
+      setLoading(false);
     }
-        
-    };
+  };
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text>Email</Text>
-      <TextInput value={email} onChangeText={setEmail} style={{ borderWidth: 1, marginBottom: 10 }} />
-      <Text>Password</Text>
-      <TextInput value={password} onChangeText={setPassword} secureTextEntry style={{ borderWidth: 1, marginBottom: 10 }} />
-      <Button title="Login" onPress={handleLogin} />
-      <Button title='Regsiter' onPress={() => router.push('/(auth)/register')}/>
+    <View style={styles.container}>
+      <Text style={styles.title}>Đăng nhập</Text>
+
+      <TextInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+      <TextInput
+        placeholder="Mật khẩu"
+        value={password}
+        onChangeText={setPassword}
+        style={styles.input}
+        secureTextEntry
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Đăng nhập</Text>
+        )}
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
+        <Text style={styles.link}>Chưa có tài khoản? Đăng ký ngay</Text>
+      </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
+  title: { fontSize: 26, fontWeight: 'bold', marginBottom: 30, textAlign: 'center' },
+  input: {
+    borderWidth: 1, borderColor: '#ccc', padding: 12, borderRadius: 10,
+    marginBottom: 15, fontSize: 16
+  },
+  button: {
+    backgroundColor: '#007AFF', padding: 15, borderRadius: 10,
+    alignItems: 'center', marginBottom: 10
+  },
+  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  link: { color: '#007AFF', textAlign: 'center', marginTop: 10 },
+});

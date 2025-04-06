@@ -3,23 +3,44 @@ import React, { useEffect, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import Search from '@/components/Search'
 import { router } from 'expo-router'
-import { collection_job_id, databases, databases_id } from '@/lib/appwrite'
+import { account, collection_job_id, collection_user_id, databases, databases_id } from '@/lib/appwrite'
 
 const index = () => {
   const [selected, setSelected] = useState(0);
   //tao bien luu du lieu theo dang mang
-
+  const [userId, setUserId] = useState<string>('')
   const [dataJob, setDataJob] = useState<any>([]);
-
+  const [dataUser, setDataUser] = useState<any>()
 
   useEffect(() => {
       load_data();
-  },[])
+      load_user_id()
+      load_data_user()
+  },[userId])
 
 
   const Switch_Selected = async ( index : number) => {
     setSelected(index);
 
+  }
+
+  const load_user_id = async () => {
+      const result = await account.get()
+      setUserId(result.$id)
+      console.log(result.$id)
+  }
+  
+  const load_data_user = async () => {
+    if(userId) {
+      try{
+        const result = await databases.getDocument(
+          databases_id,
+          collection_user_id,
+          userId
+        )
+        setDataUser(result)
+      }catch{}
+    }
   }
   
   //tao ham lay du lieu, api
@@ -37,6 +58,9 @@ const index = () => {
       }
   }
 
+  const click = () => {
+    console.log(dataUser)
+  }
 
   
   
@@ -45,15 +69,18 @@ const index = () => {
   return (
     <View style={styles.container}>
       <View style={styles.topView}>
-      {/* <TouchableOpacity style={styles.menu} onPress={click}>
+      <TouchableOpacity style={styles.menu} onPress={click}>
         <Text>test</Text>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.menu} onPress={() => router.push('/(events)/jobDescription')}>
         <Ionicons name = 'menu' color={'black'} size={24}/>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+          <Text>Login</Text>
+        </TouchableOpacity>
         <Image style = {styles.avatar}
-          source={require('@/assets/images/anh.png')}
+          source={{ uri : dataUser ? dataUser.id_image : undefined}}
         />
       </View>
       <View>

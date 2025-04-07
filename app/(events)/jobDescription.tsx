@@ -12,7 +12,7 @@ const jobDescription = () => {
     const Switch_Selected = async ( index : number) => {
       setSelected(index);
     }
-    const { jobId } = useLocalSearchParams(); // Nhận jobId từ route params
+    const { jobId } = useLocalSearchParams();
     const [dataJob, setDataJob] = useState<any>(null);
   
     useEffect(() => {
@@ -110,8 +110,8 @@ const jobDescription = () => {
         <TouchableOpacity style={styles.heartContainer}>
           <Ionicons  name='heart-outline' style={styles.iconHeart}/>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.applyContainer}>
-          
+        <TouchableOpacity style={styles.applyContainer} onPress={() => router.push({ pathname: '/(events)/submit', params: { jobId } })} >
+
             <Text style = {styles.applyText}>Apply Now</Text>
           
         </TouchableOpacity>
@@ -259,38 +259,46 @@ const styles = StyleSheet.create({
   },
   bottomContainer:{
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
     alignItems: "center",
-    gap: 10,
-    width: '100%',
-    marginTop: 20,
+    gap: 15,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
   },
   heartContainer:{
-    borderWidth: 2,
-    borderColor: '#A3A09F',
+    borderWidth: 0,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
     borderRadius: 20,
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconHeart:{
-    fontSize: 50,
-    color: '#A3A09F',
+    fontSize: 32,
+    color: '#F97459',
   },
   applyContainer:{
-    width: '85%',
-    height: 80,
-    fontFamily: 'bioRhyme',
+    flex: 1,
+    height: 60,
     backgroundColor: '#F97459',
-    borderRadius:20,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#F97459',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
     
   },
   applyText:{
-    fontSize:25,
+    fontSize: 20,
     color: 'white',
+    fontWeight: 'bold',
   },
 })

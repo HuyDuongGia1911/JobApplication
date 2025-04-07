@@ -27,6 +27,7 @@ const Layout = () => {
       <Tabs.Screen
         name="job"
         options={{
+          headerShown: false,
           title: "Job",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "file-tray-full" : "file-tray-full-outline"} color={color} size={24} />

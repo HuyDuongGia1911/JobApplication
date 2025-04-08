@@ -5,7 +5,10 @@ const Layout = () => {
    
   <Stack.Screen name = "jobDescription" options={{
     headerShown: false
-  }}/>  
+  }}/>
+  <Stack.Screen name = "submit" options ={{
+    headerShown: false
+  }}/>
    
    </Stack>);
  }

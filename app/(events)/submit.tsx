@@ -1,96 +1,150 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 
 const Submit = () => {
-  const [cvFile, setCvFile] = useState<string | null>(null);
+  // Lưu file CV đã chọn: uri & name
+  const [cvFile, setCvFile] = useState<{ uri: string; name: string } | null>(null);
+
   const [portfolioLink, setPortfolioLink] = useState<string>('');
   const [portfolioSlides, setPortfolioSlides] = useState<string[]>([]);
   const [portfolioPdfs, setPortfolioPdfs] = useState<string[]>([]);
   const [portfolioPhotos, setPortfolioPhotos] = useState<string[]>([]);
 
-  // Placeholder functions for file uploads (you can integrate actual file picker logic here)
-  const handleCvUpload = () => {
-    // Logic to upload a Doc/Docx/PDF file (e.g., using expo-document-picker)
-    setCvFile('resume.pdf'); // Mock file name for now
+  const handleCvUpload = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ],
+        copyToCacheDirectory: false,
+      });
+
+      if (result.assets && result.assets.length > 0) {
+        const pickedFile = result.assets[0];
+        const fileName = pickedFile.name;
+        const fileUri = pickedFile.uri;
+
+        const cvFolder = FileSystem.documentDirectory + 'cv/';
+        const destPath = cvFolder + fileName;
+
+        // Tạo folder nếu chưa có
+        const folderInfo = await FileSystem.getInfoAsync(cvFolder);
+        if (!folderInfo.exists) {
+          await FileSystem.makeDirectoryAsync(cvFolder, { intermediates: true });
+        }
+
+        // Xóa file cũ nếu đã tồn tại
+        const existing = await FileSystem.getInfoAsync(destPath);
+        if (existing.exists) {
+          await FileSystem.deleteAsync(destPath);
+        }
+
+        // Copy file vào app
+        await FileSystem.copyAsync({ from: fileUri, to: destPath });
+
+        // Cập nhật state
+        setCvFile({ uri: destPath, name: fileName });
+        console.log('📄 File saved to:', destPath);
+      } else {
+        console.log('❌ No file selected');
+      }
+    } catch (error) {
+      console.error('❌ Error picking file:', error);
+    }
   };
 
   const handlePortfolioLink = () => {
-    // Logic to add a portfolio link (e.g., open a text input modal)
-    setPortfolioLink('https://myportfolio.com'); // Mock link for now
+    setPortfolioLink('https://myportfolio.com');
   };
 
   const handleAddSlide = () => {
-    // Logic to add a slide (e.g., using a file picker or custom input)
-    setPortfolioSlides([...portfolioSlides, 'slide1.pptx']); // Mock slide for now
+    setPortfolioSlides([...portfolioSlides, 'slide1.pptx']);
   };
 
   const handleAddPdf = () => {
-    // Logic to add a PDF (e.g., using expo-document-picker)
-    setPortfolioPdfs([...portfolioPdfs, 'portfolio.pdf']); // Mock PDF for now
+    setPortfolioPdfs([...portfolioPdfs, 'portfolio.pdf']);
   };
 
   const handleAddPhotos = () => {
-    // Logic to add photos (e.g., using expo-image-picker)
-    setPortfolioPhotos([...portfolioPhotos, 'photo1.jpg']); // Mock photo for now
+    setPortfolioPhotos([...portfolioPhotos, 'photo1.jpg']);
   };
 
-  const handleApply = () => {
-    // Logic to submit the application (e.g., send data to a server)
-    console.log('Applying with:', { cvFile, portfolioLink, portfolioSlides, portfolioPdfs, portfolioPhotos });
-    // Navigate back or to a confirmation page
-    router.push('/'); // Adjust the route as needed
+  const handleApply = async () => {
+    console.log('📩 Gửi đơn với dữ liệu:');
+    console.log('CV:', cvFile?.name, '| URI:', cvFile?.uri);
+
+    // Sau này upload Appwrite tại đây
+    // await storage.createFile(bucketId, ID.unique(), file: cvFile.uri)
+
+    console.log({
+      portfolioLink,
+      portfolioSlides,
+      portfolioPdfs,
+      portfolioPhotos,
+    });
+
+    Alert.alert('✅ Nộp đơn thành công!');
+    router.push('/');
   };
 
   return (
     <View style={styles.container}>
-      {/* Top Navigation */}
       <View style={styles.topView}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} />
         </TouchableOpacity>
-        <Text style={styles.headerText}>Resume & Portfolio</Text>
+        <Text style={styles.headerText}>Hồ sơ & Portfolio</Text>
       </View>
 
-      {/* CV/Resume Upload Section */}
+      {/* CV Upload */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Resume or CV</Text>
-        <Text style={styles.sectionSubtitle}>Upload your CV or Resume and Where you apply Job</Text>
+        <Text style={styles.sectionTitle}>CV hoặc Resume</Text>
+        <Text style={styles.sectionSubtitle}>Tải lên hồ sơ cá nhân để ứng tuyển công việc</Text>
         <TouchableOpacity style={styles.uploadButton} onPress={handleCvUpload}>
           <Text style={styles.uploadButtonText}>
-            {cvFile ? cvFile : 'Upload a Doc/Docx/PDF'}
+            {cvFile ? cvFile.name : 'Tải file Doc/Docx/PDF'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-          <Text style={styles.applyButtonText}>Apply</Text>
+          <Text style={styles.applyButtonText}>Nộp đơn</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Portfolio Section */}
+      {/* Portfolio */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Portfolio (Optional)</Text>
+        <Text style={styles.sectionTitle}>Portfolio (Không bắt buộc)</Text>
         <View style={styles.portfolioButtonsContainer}>
           <TouchableOpacity style={styles.portfolioButton} onPress={handlePortfolioLink}>
-            <Text style={styles.portfolioButtonText}>Portfolio Link</Text>
+            <Text style={styles.portfolioButtonText}>Thêm link Portfolio</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.portfolioButton} onPress={handleAddSlide}>
-            <Text style={styles.portfolioButtonText}>Add Slide</Text>
+            <Text style={styles.portfolioButtonText}>Thêm Slide</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.portfolioButtonsContainer}>
           <TouchableOpacity style={styles.portfolioButton} onPress={handleAddPdf}>
-            <Text style={styles.portfolioButtonText}>Add Pdf</Text>
+            <Text style={styles.portfolioButtonText}>Thêm PDF</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.portfolioButton} onPress={handleAddPhotos}>
-            <Text style={styles.portfolioButtonText}>Add Photos</Text>
+            <Text style={styles.portfolioButtonText}>Thêm Hình ảnh</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Add PDF Button (at the bottom) */}
       <TouchableOpacity style={styles.addPdfButton} onPress={handleAddPdf}>
-        <Text style={styles.addPdfButtonText}>Add Pdf</Text>
+        <Text style={styles.addPdfButtonText}>Thêm PDF</Text>
       </TouchableOpacity>
     </View>
   );

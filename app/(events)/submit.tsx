@@ -96,7 +96,7 @@ const Submit = () => {
     });
 
     Alert.alert('✅ Nộp đơn thành công!');
-    router.push('/');
+    router.push('/(events)/submit');
   };
 
   return (

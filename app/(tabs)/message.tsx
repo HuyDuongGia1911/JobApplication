@@ -55,8 +55,8 @@ const Message = () => {
   return (
     <View style={styles.mainContainer}>
       <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.back_btn}>
-          <Ionicons name='arrow-back' size={24} color='black' />
+        <TouchableOpacity style={styles.menu_btn}>
+          <Ionicons name='menu' size={24} color='black' />
         </TouchableOpacity>
         <Text style={styles.header}>Message</Text>
       </View>
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginRight: 50,
   },
-  back_btn: {
+  menu_btn: {
     width: 40,
     height: 40,
     justifyContent: 'center',

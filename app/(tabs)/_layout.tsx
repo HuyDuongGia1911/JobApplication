@@ -7,7 +7,7 @@ const Layout = () => {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "home" : "home-outline"} color={color} size={24} />
@@ -18,7 +18,7 @@ const Layout = () => {
         name="message"
         options={{
           headerShown: false,
-          title: "Message",
+          title: "",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "chatbubble-ellipses" : "chatbubble-ellipses-outline"} color={color} size={24} />
           ),
@@ -28,7 +28,7 @@ const Layout = () => {
         name="job"
         options={{
           headerShown: false,
-          title: "Job",
+          title: "",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "file-tray-full" : "file-tray-full-outline"} color={color} size={24} />
           ),
@@ -37,7 +37,7 @@ const Layout = () => {
       <Tabs.Screen
         name="person"
         options={{
-          title: "Person",
+          title: "",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "person-circle" : "person-circle-outline"} color={color} size={24} />
           ),

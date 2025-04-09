@@ -69,13 +69,10 @@ const index = () => {
   return (
     <View style={styles.container}>
       <View style={styles.topView}>
-      <TouchableOpacity style={styles.menu} onPress={click}>
-        <Text>test</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menu} onPress={() => router.push('/(events)/jobDescription')}>
+        {/* <TouchableOpacity style={styles.menu} onPress={() => router.push('/(events)/jobDescription')}>
         <Ionicons name = 'menu' color={'black'} size={24}/>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
           <Text>Login</Text>
         </TouchableOpacity>
@@ -84,7 +81,7 @@ const index = () => {
         />
       </View>
       <View>
-        <Text style={styles.hello}>Hello Test</Text>
+        <Text style={styles.hello}>Welcome to Test</Text>
         <Text style={styles.hello2}>Tìm công việc của bạn</Text>
       </View>
       <View>
@@ -92,7 +89,7 @@ const index = () => {
       </View>
 
       
-      <View style={styles.btnSelect}>
+      {/* <View style={styles.btnSelect}>
         <TouchableOpacity style={[styles.btnSelectTouch, selected === 0 ? styles.btnSelectClickActive : styles.btnSelectClick]} onPress={() => Switch_Selected(0)}>
           <Text style= {[selected === 0 ? styles.textBtnSelectActive : styles.textBtnSelect]}>Home</Text>
         </TouchableOpacity>
@@ -102,7 +99,7 @@ const index = () => {
         <TouchableOpacity style={[styles.btnSelectTouch, selected === 2 ? styles.btnSelectClickActive : styles.btnSelectClick]} onPress={() => Switch_Selected(2)}>
           <Text style={[selected === 2 ? styles.textBtnSelectActive : styles.textBtnSelect]}>Trang 3</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
       {selected === 0 ? (
         <View style={styles.cardsContainer}>
           <View style={styles.cardsHeaderContainer}>

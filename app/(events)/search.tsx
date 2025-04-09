@@ -7,26 +7,27 @@ import {
   collection_job_id,
   collection_jobtype_id,
   collection_jobcategory_id,
+  collection_company_id,
   Query
 } from '@/lib/appwrite';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Provider as PaperProvider } from 'react-native-paper';
-
+import { router } from 'expo-router'
 interface Job {
   $id: string;
   title: string;
-  corp_name: string;
+  
   image: string;
-  nation: string;
-  corp_description: string;
+  
   skills_required: string;
   responsibilities: string;
   created_at: string;
   updated_at: string;
   salary: number;
-  city: string;
+ 
   jobTypes: any;
   jobCategories: any;
+  company: any;
 }
 
 interface JobType {
@@ -38,19 +39,28 @@ interface JobCategory {
   $id: string;
   category_name: string;
 }
+interface Company {
+  $id: string;
+  corp_name: string;
+  nation: string;
+  corp_description: string;
+  city: string;
+}
 
 export default function SearchScreen() {
   const { q } = useLocalSearchParams();
   const [jobs, setJobs] = useState<Job[]>([]);
-
+  const [company, setCompany] = useState<Company[]>([]);
   const [jobTypes, setJobTypes] = useState<JobType[]>([]);
   const [jobCategories, setJobCategories] = useState<JobCategory[]>([]);
 
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
 
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
 
   const fetchJobs = async () => {
     try {
@@ -59,7 +69,7 @@ export default function SearchScreen() {
       if (q) queries.push(Query.search('title', q as string));
       if (selectedTypeId) queries.push(Query.equal('jobTypes', selectedTypeId));
       if (selectedCategoryId) queries.push(Query.equal('jobCategories', selectedCategoryId));
-
+      if (selectedCompanyId) queries.push(Query.equal('company', selectedCompanyId));
       const response = await databases.listDocuments(databases_id, collection_job_id, queries);
 
       const formattedJobs: Job[] = response.documents.map((doc: any) => ({
@@ -76,7 +86,7 @@ export default function SearchScreen() {
     try {
       const typesRes = await databases.listDocuments(databases_id, collection_jobtype_id);
       const categoriesRes = await databases.listDocuments(databases_id, collection_jobcategory_id);
-
+      const companyRes = await databases.listDocuments(databases_id, collection_company_id);
       setJobTypes(
         typesRes.documents.map((doc: any) => ({
           $id: doc.$id,
@@ -90,7 +100,15 @@ export default function SearchScreen() {
           category_name: doc.category_name,
         }))
       );
-      
+      setCompany(
+        companyRes.documents.map((doc: any) => ({
+          $id: doc.$id,
+          corp_name: doc.corp_name,
+          nation: doc.nation,
+          corp_description: doc.corp_description,
+          city: doc.corp_description,
+        }))
+      );
     } catch (err) {
       console.error('Error loading filters:', err);
     }
@@ -99,6 +117,7 @@ export default function SearchScreen() {
   const clearFilters = () => {
     setSelectedTypeId(null);
     setSelectedCategoryId(null);
+    setSelectedCompanyId(null);
   };
 
   useEffect(() => {
@@ -107,7 +126,7 @@ export default function SearchScreen() {
 
   useEffect(() => {
     fetchJobs();
-  }, [q, selectedTypeId, selectedCategoryId]);
+  }, [q, selectedTypeId, selectedCategoryId, selectedCompanyId]);
 
   return (
     <PaperProvider>
@@ -147,7 +166,22 @@ export default function SearchScreen() {
             dropDownContainerStyle={styles.dropdownContainer}
           />
         </View>
-
+         {/* DropDown Danh mục công ty */}
+         <View style={{ zIndex: 800 }}>
+          <DropDownPicker
+            open={companyDropdownOpen}
+            setOpen={setCompanyDropdownOpen}
+            value={selectedCompanyId}
+            setValue={setSelectedCompanyId}
+            items={company.map((com) => ({
+              label: com.corp_name,
+              value: com.$id
+            }))}
+            placeholder="Danh mục công ty"
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+          />
+        </View>
         <TouchableOpacity onPress={clearFilters}>
           <Text style={styles.clearButton}> Xóa bộ lọc</Text>
         </TouchableOpacity>
@@ -162,10 +196,12 @@ export default function SearchScreen() {
     data={jobs}
     keyExtractor={(item) => item.$id}
     renderItem={({ item }) => (
-      <TouchableOpacity>
+      <TouchableOpacity
+      onPress={() => router.push({ pathname: "/jobDescription", params: { jobId: item.$id } })}
+      >
       <View style={styles.jobItem}>
         <Text style={styles.jobTitle}>{item.title}</Text>
-        <Text>{item.corp_name} - {item.city}</Text>
+        <Text>{item.company?.corp_name} - {item.company?.city}</Text>
       </View>
       </TouchableOpacity>
           )}

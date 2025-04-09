@@ -24,21 +24,23 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
+    const user_id = ID.unique();
     try {
-      const user_id = ID.unique();
+     
       await account.create(user_id, email, password);
       await databases.createDocument(
         databases_id,
         collection_user_id,
         user_id,
         {
-          isAdmin: 0,
+          isAdmin: false,
           id_image: null,
         }
       );
       Alert.alert('Thành công', 'Đăng ký thành công, vui lòng đăng nhập.');
       router.replace('/(auth)/login');
     } catch (error: any) {
+      await account.deleteSession('current');
       Alert.alert('Lỗi đăng ký', error.message);
     } finally {
       setLoading(false);

@@ -162,10 +162,12 @@ export default function SearchScreen() {
     data={jobs}
     keyExtractor={(item) => item.$id}
     renderItem={({ item }) => (
+      <TouchableOpacity>
       <View style={styles.jobItem}>
         <Text style={styles.jobTitle}>{item.title}</Text>
         <Text>{item.corp_name} - {item.city}</Text>
       </View>
+      </TouchableOpacity>
           )}
           />
           )}

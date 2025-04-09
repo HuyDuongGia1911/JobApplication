@@ -18,7 +18,8 @@ const Search = () => {
     <View style={styles.searchbar}>
       <TextInput
         style={styles.input}
-        placeholder="Tìm kiếm"
+        placeholder="Tìm kiếm công việc"
+        placeholderTextColor="#CCCCCC"
         value={keyword}
         onChangeText={setKeyword}
       />
@@ -36,19 +37,20 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderRadius: 12,
     flex: 1,
-    backgroundColor: '#F1F2F6',
+    backgroundColor: '#1674D1',
     paddingHorizontal: 10,
   },
   btnSearch: {
     borderRadius: 12,
-    backgroundColor: '#F27657',
+    backgroundColor: '#F5A623',
     height: 50,
     width: 50,
     justifyContent: 'center',
     alignItems: 'center',
   },
   searchbar: {
-    marginVertical: 30,
+    // marginVertical: 20,
+    marginTop: 30,
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 10,

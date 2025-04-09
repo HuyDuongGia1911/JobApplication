@@ -20,6 +20,7 @@ const person = () => {
               <Text style={styles.hello}>Hello Test</Text>
               <Text style={styles.hello2}>Tìm công việc của bạn</Text>
             </View>
+            
           </View>
       </>
     )

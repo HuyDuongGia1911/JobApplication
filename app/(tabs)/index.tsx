@@ -1,10 +1,10 @@
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, FlatList } from 'react-native'
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, FlatList, SectionList } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import Search from '@/components/Search'
 import { router } from 'expo-router'
 import { account, collection_job_id, collection_user_id, databases, databases_id } from '@/lib/appwrite'
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 const index = () => {
   const [selected, setSelected] = useState(0);
@@ -68,105 +68,79 @@ const index = () => {
   
   
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.topView}>
-
-        {/* <TouchableOpacity style={styles.menu} onPress={() => router.push('/(events)/jobDescription')}>
-        <Ionicons name = 'menu' color={'black'} size={24}/>
-        </TouchableOpacity> */}
-        <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-          <Text>Login</Text>
-        </TouchableOpacity>
-        <Image style = {styles.avatar}
-          source={{ uri : dataUser ? dataUser.id_image : undefined}}
-        />
-      </View>
-      <View>
-        <Text style={styles.hello}>Welcome to Test</Text>
-        <Text style={styles.hello2}>Tìm công việc của bạn</Text>
-      </View>
-      <View>
-        <Search />
-      </View>
-
-      
-      {/* <View style={styles.btnSelect}>
-        <TouchableOpacity style={[styles.btnSelectTouch, selected === 0 ? styles.btnSelectClickActive : styles.btnSelectClick]} onPress={() => Switch_Selected(0)}>
-          <Text style= {[selected === 0 ? styles.textBtnSelectActive : styles.textBtnSelect]}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.btnSelectTouch, selected === 1 ? styles.btnSelectClickActive : styles.btnSelectClick]} onPress={() => Switch_Selected(1)}>
-          <Text style={[selected === 1 ? styles.textBtnSelectActive : styles.textBtnSelect]}>Trang 2</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.btnSelectTouch, selected === 2 ? styles.btnSelectClickActive : styles.btnSelectClick]} onPress={() => Switch_Selected(2)}>
-          <Text style={[selected === 2 ? styles.textBtnSelectActive : styles.textBtnSelect]}>Trang 3</Text>
-        </TouchableOpacity>
-      </View> */}
-      {selected === 0 ? (
-        <View style={styles.cardsContainer}>
-          <View style={styles.cardsHeaderContainer}>
-                    <Text style={styles.popularJobs}>Popular Jobs</Text>
-                    <TouchableOpacity>
-                      <Text style={styles.showAllBtn}>Show all</Text>
-                    </TouchableOpacity>
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <View style={styles.topView}>
+            {/* <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+              <Text>Login</Text>
+            </TouchableOpacity> */}
+            <View style={styles.welcomeTextContainer}>
+              <Text style={styles.hello}>Welcome Back!</Text>
+              <Text style={styles.hello2}>My name</Text>
             </View>
-            <FlatList 
-              data={dataJob}
-              keyExtractor={(item) => item.$id}
-              renderItem={({ item }) => (
-                <TouchableOpacity 
-                  style={styles.jobCardsContainer} 
-                  onPress={() => router.push({ pathname: "/jobDescription", params: { jobId: item.$id } })}
-                >
-                  <Image style={styles.jobImages} source={{ uri: item.image }} />
-                  <Text style={styles.jobCorp}>Công ty {item.corp_name}</Text>
-                  <View style={styles.jobCardsDescription}>
-                    <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
-                    <Text style={styles.jobNation}>{item.nation}</Text>
-                  </View>
-                </TouchableOpacity> 
-              )}
-              horizontal
-              style={styles.flatlistCustom}
+            <Image style = {styles.avatar}
+              source={{ uri : 'https://randomuser.me/api/portraits/men/1.jpg'}}
+              // dataUser ? dataUser.id_image : undefined
             />
-          <View>
-          <View style={styles.cardsHeaderContainer}>
-                    <Text style={styles.popularJobs}>Full-time Jobs</Text>
-                    <TouchableOpacity>
-                      <Text style={styles.showAllBtn}>Show all</Text>
-                    </TouchableOpacity>
-            </View>
-            <FlatList 
-              data={dataJob.slice(0, 4)}
-              keyExtractor={(item) => item.$id}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.jobCardsContainer2}>
-                  <Image style={styles.jobImages} source={{uri: item.image}}/>
-                  <View style={styles.jobCardsDescription2}>
-                      <Text style={styles.jobCorp}>Cong ty {item.corp_name}</Text>
-                      <View style={styles.jobCardsDescription}>
-                        <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
-                        <Text style={styles.jobNation}>{item.nation}</Text>
-                      </View>
-                  </View>
-                </TouchableOpacity>
-              )}
-              style={styles.flatlistCustom}
-            />
+        </View>
+        <View style = {styles.searchContainer}>
+          <Search />
+        </View>
+      </View>
+      <ScrollView contentContainerStyle ={styles.cardsContainer}
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.cardsHeaderContainer}>
+          <Text style={styles.popularJobs}>Popular Jobs</Text>
+          <TouchableOpacity>
+            <Text style={styles.showAllBtn}>Show all</Text>
+          </TouchableOpacity>
+        </View>
+          <FlatList 
+            data={dataJob}
+            keyExtractor={(item) => item.$id}
+            renderItem={({ item }) => (
+              <TouchableOpacity 
+                style={styles.jobCardsContainer} 
+                onPress={() => router.push({ pathname: "/jobDescription", params: { jobId: item.$id } })}
+              >
+                <Image style={styles.jobImages} source={{ uri: item.image }} />
+                <Text style={styles.jobCorp}>Công ty {item.corp_name}</Text>
+                <View style={styles.jobCardsDescription}>
+                  <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
+                  <Text style={styles.jobNation}>{item.nation}</Text>
+                </View>
+              </TouchableOpacity> 
+            )}
+            horizontal
+            style={styles.flatlistCustom}
+          />
+        <View>
+        <View style={styles.cardsHeaderContainer}>
+                  <Text style={styles.popularJobs}>Full-time Jobs</Text>
+                  <TouchableOpacity>
+                    <Text style={styles.showAllBtn}>Show all</Text>
+                  </TouchableOpacity>
           </View>
+          <FlatList 
+            data={dataJob.slice(0, 4)}
+            keyExtractor={(item) => item.$id}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.jobCardsContainer2}>
+                <Image style={styles.jobImages} source={{uri: item.image}}/>
+                <View style={styles.jobCardsDescription2}>
+                    <Text style={styles.jobCorp}>Cong ty {item.corp_name}</Text>
+                    <View style={styles.jobCardsDescription}>
+                      <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
+                      <Text style={styles.jobNation}>{item.nation}</Text>
+                    </View>
+                </View>
+              </TouchableOpacity>
+            )}
+            style={styles.flatlistCustom}
+          />
         </View>
-        
-      ) : selected === 1 ? (
-        <View>
-          <Text>trang 2ss</Text>
-          
-        
-        </View>
-      ) : (
-        <View>
-          <Text>trang 3</Text>
-        </View>
-      )}
-    </SafeAreaView>
+      </ScrollView>
+    </View>
   ) 
   
 }
@@ -176,7 +150,7 @@ export default index
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#F9F9FB',
-    paddingHorizontal: 30,
+    
   },
   menu: {
     borderWidth: 0,
@@ -189,27 +163,48 @@ const styles = StyleSheet.create({
     // giua doc
     justifyContent: 'center',
   },
+  headerContainer: {
+    backgroundColor: '#4A80F0',
+    paddingHorizontal: 30,
+    paddingBottom: 25,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    marginBottom: 10,
+    paddingTop: 30,
+  },
   avatar: {
- 
-    height: 40,
-    width: 40,
-    borderRadius: 3,
+    height: 50,
+    width: 50,
+    borderRadius: 25,
+    marginLeft: 15,
 
   },
+
   topView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  
-    marginVertical: 10,
+    alignItems: 'center',
+    marginVertical: 20,
+    width: '100%',
+  },
+  welcomeTextContainer: {
+    flex: 1, 
   },
   hello: {
     fontFamily: 'Arial',
-    fontSize: 35,
+    fontSize: 25,
+    color: 'white',
   },
   hello2: {
     fontFamily: 'Arial',
     fontWeight: '800',
-    fontSize: 35,
+    fontSize: 30,
+    marginTop: 5,
+    color: 'white',
+  },
+  searchContainer: {
+    width: '100%',
+    marginBottom: 20,
   },
 
   btnSelect: {

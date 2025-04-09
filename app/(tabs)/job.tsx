@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Job = () => {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -96,7 +97,7 @@ const Job = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style ={styles.menu_btn}>
@@ -150,7 +151,7 @@ const Job = () => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16 }}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

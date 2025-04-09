@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import Search from '@/components/Search'
 import { router } from 'expo-router'
 import { account, collection_job_id, collection_user_id, databases, databases_id } from '@/lib/appwrite'
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const index = () => {
   const [selected, setSelected] = useState(0);
@@ -67,7 +68,7 @@ const index = () => {
   
   
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.topView}>
 
         {/* <TouchableOpacity style={styles.menu} onPress={() => router.push('/(events)/jobDescription')}>
@@ -165,7 +166,7 @@ const index = () => {
           <Text>trang 3</Text>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   ) 
   
 }
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
   topView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    
+  
     marginVertical: 10,
   },
   hello: {

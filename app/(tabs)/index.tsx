@@ -88,7 +88,6 @@ const index = () => {
           <Search />
         </View>
       </View>
-      {/* ScrollView chính */}
       <ScrollView 
         style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
@@ -105,61 +104,98 @@ const index = () => {
           <View style={styles.cardsContainer}>
             {/* Popular Jobs Section */}
             <View style={styles.cardsHeaderContainer}>
-              <Text style={styles.popularJobs}>Popular Jobs</Text>
+              <Text style={styles.popularJobs}>Company</Text>
               <TouchableOpacity>
                 <Text style={styles.showAllBtn}>Show all</Text>
               </TouchableOpacity>
             </View>
-            
-            {/* Horizontal ScrollView cho Popular Jobs */}
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingRight: 10 }}
-            >
-              {dataJob.map((item: any) => (
-                <TouchableOpacity 
-                  key={item.$id}
-                  style={styles.jobCardsContainer} 
-                  onPress={() => router.push({ pathname: "/jobDescription", params: { jobId: item.$id } })}
-                >
-                  <Image style={styles.jobImages} source={{ uri: item.image }} />
-                  <Text style={styles.jobCorp}>Công ty {item.corp_name}</Text>
-                  <View style={styles.jobCardsDescription}>
-                    <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
-                    <Text style={styles.jobNation}>{item.nation}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            
-            {/* Full-time Jobs Section */}
-            <View style={[styles.cardsHeaderContainer, { marginTop: 20 }]}>
-              <Text style={styles.popularJobs}>Full-time Jobs</Text>
-              <TouchableOpacity>
-                <Text style={styles.showAllBtn}>Show all</Text>
-              </TouchableOpacity>
-            </View>
-            
-            {/* Vertical list of Full-time Jobs */}
-            <View>
-              {dataJob.slice(0, 4).map((item: any) => (
-                <TouchableOpacity 
-                  key={item.$id}
-                  style={styles.jobCardsContainer2}
-                  onPress={() => router.push({ pathname: "/jobDescription", params: { jobId: item.$id } })}
-                >
-                  <Image style={styles.jobImages} source={{uri: item.image}}/>
-                  <View style={styles.jobCardsDescription2}>
-                    <Text style={styles.jobCorp}>Cong ty {item.corp_name}</Text>
+            <View style={styles.horizontalScrollContainer}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
+              >
+                {dataJob.map((item: any) => (
+                  <TouchableOpacity 
+                    key={item.$id}
+                    style={styles.jobCardsContainer} 
+                    onPress={() => router.push({ pathname: "/jobDescription", params: { jobId: item.$id } })}
+                  >
+                    <Image style={styles.jobImages} source={{ uri: item.image }} />
                     <View style={styles.jobCardsDescription}>
                       <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
                       <Text style={styles.jobNation}>{item.nation}</Text>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </View>
+
+
+              {/* Category Section */}
+            <View style={{ marginBottom: 20 }}>
+              <View style={styles.cardsHeaderContainer}>
+                <Text style={styles.popularJobs}>Category</Text>
+                <TouchableOpacity>
+                  <Text style={styles.showAllBtn}>Show all</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.categoryGrid}>
+                {[
+                  { title: 'Accounting', jobs: '7+ Jobs', color: '#e6f4ec', icon: 'shield-checkmark' },
+                  { title: 'Banking', jobs: '6+ Jobs', color: '#e6e9f4', icon: 'business' },
+                  { title: 'Engineering', jobs: '11+ Jobs', color: '#fff4e6', icon: 'construct' },
+                  { title: 'Health Care', jobs: '2+ Jobs', color: '#f4e6ef', icon: 'medkit' },
+                ].map((item, index) => (
+                  <View key={index} style={[styles.categoryCard, { backgroundColor: item.color }]}>
+                    <View style={styles.categoryIcon}>
+                      <Ionicons name={item.icon as any} size={24} color="#333" />
+                    </View>
+                    <Text style={styles.categoryTitle}>{item.title}</Text>
+                    <Text style={styles.categorySubtitle}>{item.jobs}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+
+
+
+            
+            {/* Latest Jobs Section */}
+            <View style={[styles.cardsHeaderContainer, { marginTop: 20 }]}>
+              <Text style={styles.popularJobs}>Latest Jobs</Text>
+              <TouchableOpacity>
+                <Text style={styles.showAllBtn}>Show all</Text>
+              </TouchableOpacity>
+            </View>
+            
+
+            <View style={styles.horizontalScrollContainer}>
+  <ScrollView 
+    horizontal 
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
+  >
+    {dataJob.slice(0, 4).map((item: any) => (
+      <TouchableOpacity 
+        key={item.$id}
+        style={[styles.jobCardsContainer2, styles.horizontalJobCard]}
+        onPress={() => router.push({ pathname: "/jobDescription", params: { jobId: item.$id } })}
+      >
+        <Image style={styles.jobImages} source={{uri: item.image}}/>
+        <View style={styles.jobCardsDescription2}>
+          <Text style={styles.jobCorp}>Cong ty {item.corp_name}</Text>
+          <View style={styles.jobCardsDescription}>
+            <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
+            <Text style={styles.jobNation}>{item.nation}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    ))}
+  </ScrollView>
+</View>
           </View>
       </ScrollView>
     </View>
@@ -230,8 +266,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   showAllBtn: {
-    fontSize: 20,
+    fontSize: 18,
     color: '#a9a9a9',
+  },
+  horizontalScrollContainer: {
+    marginHorizontal: -30,
+    marginBottom: 20,
+  },
+  horizontalJobCard: {
+    width: 300, 
+    marginRight: 15, 
+    borderWidth: 1,
+    borderColor: '#F1F2F6',
   },
   jobTitle: {
     fontFamily: 'serif',
@@ -242,9 +288,10 @@ const styles = StyleSheet.create({
   jobImages: {
     height: 70,
     width: 70,
-    borderRadius: 5,
-    borderWidth: 8,
-    borderColor: '#F1F2F6'
+    alignItems: 'center',
+    borderRadius: 40,
+    borderWidth: 1,
+    borderColor: '#4A80F0'
   },
   jobCorp: {
     color: '#a9a9a9',
@@ -254,13 +301,16 @@ const styles = StyleSheet.create({
     color: '#a9a9a9'
   },
   jobCardsContainer: {
-    width: 300,
+    width: 200,
+    height: 200,
     borderRadius: 20,
     gap: 10,
-    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 20,
     marginRight: 20,
-    borderWidth: 14,
-    borderColor: '#F1F2F6',
+    borderWidth: 1,
+    borderColor: '#4A80F0',
     backgroundColor: '#FFFFFF',
   },
   jobCardsContainer2: {
@@ -275,11 +325,50 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   jobCardsDescription: {
-    gap: 5
+    gap: 5,
   },
   jobCardsDescription2: {
     flexDirection: 'column',
     marginLeft: 15,
     flex: 1,
   },
+
+  // category card
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 15,
+  },
+  categoryCard: {
+    width: '47%',
+    borderRadius: 15,
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryIcon: {
+    height: 40,
+    width: 40,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  categoryTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  categorySubtitle: {
+    fontSize: 14,
+    color: '#555',
+  },
+  
 });

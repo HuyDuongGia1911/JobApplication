@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Search from '@/components/Search';
 import { router } from 'expo-router';
-import { account, collection_job_id, collection_user_id, databases, databases_id } from '@/lib/appwrite';
+import { account, collection_company_id, collection_job_id, collection_user_id, databases, databases_id } from '@/lib/appwrite';
 
 const index = () => {
   const [selected, setSelected] = useState(0);
@@ -12,33 +12,40 @@ const index = () => {
   const [dataUser, setDataUser] = useState<any>();
   const [refreshing, setRefreshing] = useState(false);
   const [userName, setUserName] = useState('');
-
+  const [dataCompany, setDataCompany] = useState<any>([])
+  
   useEffect(() => {
-    load_data();
+    load_data_job();
     load_user_id();
     load_data_user();
+    load_data_company();
   }, [userId]);
   useEffect(() => {
+    
     const getAuthUser = async () => {
       try {
        
         const user = await account.get();
         console.log("(NOBRIDGE) LOG USER NAME:", user.name);
+        console.log(dataCompany)
         setUserName(user.name);
       } catch (error) {
         console.error("Không lấy được thông tin user:", error);
       }
     };
-  
+ 
+    
     getAuthUser();
   }, []);
+  
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     
     Promise.all([
-      load_data(),
+     
       load_user_id(),
-      load_data_user()
+      load_data_user(),
+      load_data_job(),
     ]).finally(() => {
       setRefreshing(false);
     });
@@ -73,7 +80,7 @@ const index = () => {
     }
   };
   
-  const load_data = async () => {
+  const load_data_job = async () => {
     try {
       const result = await databases.listDocuments(
         databases_id,
@@ -84,7 +91,20 @@ const index = () => {
       console.log(error);
     }
   };
-
+  
+  
+  const load_data_company = async () => {
+    try{
+      const result = await databases.listDocuments(
+        databases_id,
+        collection_company_id
+      );
+      setDataCompany(result.documents);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  
   return (
     <View style={{ flex: 1, backgroundColor: '#4A80F0' }}>
       {/* Header cố định */}
@@ -132,15 +152,15 @@ const index = () => {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
               >
-                {dataJob.map((item: any) => (
+                {dataCompany.map((item: any) => (
                   <TouchableOpacity 
                     key={item.$id}
                     style={styles.jobCardsContainer} 
-                    onPress={() => router.push({ pathname: "/jobDescription", params: { jobId: item.$id } })}
+                    onPress={() => router.push({ pathname: "/(events)/companyDescription", params: { companyId: item.$id } })}
                   >
                     <Image style={styles.jobImages} source={{ uri: item.image }} />
                     <View style={styles.jobCardsDescription}>
-                      <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
+                      <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.corp_name}</Text>
                       <Text style={styles.jobNation}>{item.nation}</Text>
                     </View>
                   </TouchableOpacity>
@@ -195,22 +215,39 @@ const index = () => {
     showsHorizontalScrollIndicator={false}
     contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
   >
-    {dataJob.slice(0, 4).map((item: any) => (
-      <TouchableOpacity 
-        key={item.$id}
-        style={[styles.jobCardsContainer2, styles.horizontalJobCard]}
-        onPress={() => router.push({ pathname: "/jobDescription", params: { jobId: item.$id } })}
-      >
-        <Image style={styles.jobImages} source={{uri: item.image}}/>
-        <View style={styles.jobCardsDescription2}>
-          <Text style={styles.jobCorp}>Cong ty {item.corp_name}</Text>
-          <View style={styles.jobCardsDescription}>
-            <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
-            <Text style={styles.jobNation}>{item.nation}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    ))}
+   {dataJob.slice(0, 4).map((item: any) => (
+          <TouchableOpacity
+            key={item.$id}
+            style={[styles.jobCardsContainer2, styles.horizontalJobCard]}
+            onPress={() =>
+              router.push({
+                pathname: '/jobDescription',
+                params: { jobId: item.$id },
+              })
+            }
+          >
+            <Image style={styles.jobImages} source={{ uri: item.image }} />
+            <View style={styles.jobCardsDescription2}>
+              <Text style={styles.jobCorp}>
+                Công ty: {item.company?.corp_name ?? 'Không rõ'}
+              </Text>
+              <View style={styles.jobCardsDescription}>
+                <Text
+                  style={styles.jobTitle}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {item.title}
+                </Text>
+                <Text style={styles.jobNation}>
+                  {item.company?.nation ?? 'Không rõ'}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
+
+
   </ScrollView>
 </View>
           </View>

@@ -15,17 +15,17 @@ export default function LoginScreen() {
   
     setLoading(true);
     try {
-      // Xoá session hiện tại nếu có
+     
       try {
         await account.deleteSession('current');
       } catch (e) {
-        // không sao nếu không có session
+       
       }
   
-      // 🔥 Chỉ gọi login bằng email, không gọi createAnonymousSession
+      
       await account.createEmailPasswordSession(email, password);
   
-      // Điều hướng thành công
+     
       router.replace('/(tabs)');
     } catch (error: any) {
       alert('Login failed: ' + error.message);

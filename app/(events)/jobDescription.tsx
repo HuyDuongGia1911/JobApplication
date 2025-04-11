@@ -57,7 +57,7 @@ const jobDescription = () => {
         <View style = {styles.companyName}>
 
           <Text style={styles.companyNameText}>{dataJob?.title}</Text>
-          <Text style={styles.companyNameText}>{dataJob?.corp_name}</Text>
+          <Text style={styles.companyNameText}>{dataJob?.company?.corp_name}</Text>
         </View>
         <View style={styles.jobInfoContainer}>
           <View style={styles.jobInfoBox}>
@@ -72,9 +72,9 @@ const jobDescription = () => {
             <Text style={styles.companyInfoText}>$ {dataJob?.salary}</Text> 
           </View>
           <View style={styles.companyLocation}> 
-            <Text style = {styles.companyInfoText}>{dataJob?.city} /</Text>
+            <Text style = {styles.companyInfoText}>{dataJob?.company?.city} /</Text>
             <Ionicons style = {styles.companyInfoText2} name='location' size={24}/>
-            <Text style = {styles.companyInfoText2}>{dataJob?.nation || "No Nation"}</Text>
+            <Text style = {styles.companyInfoText2}>{dataJob?.company?.nation || "No Nation"}</Text>
           </View>
         </View>
         </View>

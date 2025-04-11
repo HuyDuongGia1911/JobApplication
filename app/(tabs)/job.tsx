@@ -100,9 +100,6 @@ const Job = () => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style ={styles.menu_btn}>
-          <Ionicons name="menu-outline" size={28} color="#333" />
-        </TouchableOpacity>
         <Text style={styles.headerText}>Save Job List</Text>
       </View>
 
@@ -185,13 +182,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
-  },
-  menu_btn: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
   },
   savedText: {
     fontSize: 16,

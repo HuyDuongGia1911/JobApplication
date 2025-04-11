@@ -1,26 +1,101 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image, } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, Modal, } from 'react-native'
 import React from 'react'
 import { Stack } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
+import { Feather, Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
+import {useState} from 'react'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+
 const person = () => {
+  
+  const [editField, setEditField] = useState<null | 'phone' | 'email' | 'password'>(null);
+  const [phone, setPhone] = useState('9999 9999')
+  const [email, setEmail] = useState('test@gmail.com')
+  const [password, setPassword] = useState({current: '', new:'', confirm:''})
+
+
+  const handleSave = ()=>{
+    if (editField ==='password'){
+      if (password.new !== password.confirm){
+        Alert.alert('Error', 'Password does not match')
+        return
+      }
+      Alert.alert('Success', 'Password updated successfully')
+      setPassword({current:'', new:'', confirm:''})
+    }
+    setEditField(null)
+  }
+
    return (
       <>
-          <Stack.Screen options={{headerShown: false}}/>
+        <Stack.Screen options={{headerShown: false}}/>
+          
           <View style={styles.container}>
-            <View style={styles.topView}>
-              <TouchableOpacity style={styles.menu} onPress={() => router.push('/(events)/jobDescription')}>
-              <Ionicons name = 'menu' color={'black'} size={24}/>
-              </TouchableOpacity>
-              <Image style = {styles.avatar}
-                source={require('@/assets/images/anh.png')}
-              />
+
+            <View style = {styles.avatarSection}>
+              <View>
+                <Image style= {styles.avatar} source={require('@/assets/images/favicon.png')} />
+                <TouchableOpacity style = {styles.editAvatar}>
+                  <Feather  name= "camera" size={18} color="#fff" />
+                </TouchableOpacity>
+              </View>
+
+              <Text style ={styles.name}> Hoang Bao </Text>
             </View>
-            <View>
-              <Text style={styles.hello}>Hello Test</Text>
-              <Text style={styles.hello2}>Tìm công việc của bạn</Text>
+
+            <Text style= {styles.editProfile}> Edit Profile</Text>
+            <View style ={styles.infoBox}>
+              <Text> Phone number</Text>
+              <View style ={styles.inputRow}>
+                <Text style = {styles.input}> {phone}</Text>
+                <TouchableOpacity onPress= {() => setEditField('phone')}>
+                    <Feather name = "edit-2" size={16} color ="#333" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style ={styles.infoBox}>
+              <Text style = {styles.label}> Password </Text>
+              <View style ={styles.inputRow} >
+                <Text style ={styles.iput}> ***** </Text>
+                <TouchableOpacity onPress={() => setEditField('password')}>
+                  <Feather name = "edit-2" size={16} color ="#333" />   
+                </TouchableOpacity>
+              </View>
             </View>
             
+            <View style ={styles.infoBox}>
+              <Text style = {styles.label}> Email </Text>
+              <View style ={styles.inputRow}>
+                <Text>*****</Text>
+                <TouchableOpacity onPress ={() => setEditField('email')}>
+                  <Feather name = "edit-2" size={16} color ="#333" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          <TouchableOpacity style={styles.bottomRow}>
+            <Text style={styles.bottomText}>Setting</Text>
+            <Ionicons name="arrow-forward" size={18} color="#000" />
+          </TouchableOpacity>
+            
+            {/* visible: xem modal co hien thi hay khong */}
+            {/* !!editFiled chuyen doi thanh boolean, neu khac null => true else false */}
+          <Modal visible = {!!editField} transparent animationType="slide">
+            <View style = {styles.modalContainer}>
+              <View>
+              {editField === 'phone'
+                  ? 'Edit Phone Number'
+                  : editField === 'email'
+                  ? 'Edit Email'
+                  : 'Change Password'}
+              </View>
+              
+              {editField === ''}
+            </View>
+          </Modal>
+
+
           </View>
       </>
     )
@@ -30,40 +105,46 @@ export default person
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F9F9FB',
-    paddingHorizontal: 30,
+    flex: 1,
+    backgroundColor: '#fff',
   },
-  menu: {
-    borderWidth: 0,
-    height: 40,
-    width: 40,
-    backgroundColor: '#e8e8e8',
-    borderRadius: 4,
-    //giua ngang
+  avatarSection: {
     alignItems: 'center',
-    // giua doc
-    justifyContent: 'center',
+    marginTop: 50,
+    marginBottom: 20,
   },
   avatar: {
- 
-    height: 40,
-    width: 40,
-    borderRadius: 3,
+    height: 100,
+    width: 100,
+    borderRadius: 50,
+  },
+  editAvatar: {
+    position: 'absolute', //can chinh theo vi tri phan tu cha gan nhat
+    bottom: 0,
+    right :0,
+    backgroundColor: '#333',
+    borderRadius: 50,
+    padding: 5, //tao khoang cach giua cac canh cua phan tu
+    
+  },
+  name: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 10,
+    color: '#000',
+  },
+  editProfile: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginVertical: 15,
+    color: '#000',
 
   },
-  topView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    
-    marginVertical: 10,
-  },
-  hello: {
-    fontFamily: 'Arial',
-    fontSize: 35,
-  },
-  hello2: {
-    fontFamily: 'Arial',
-    fontWeight: '800',
-    fontSize: 35,
-  },
+  infoBox: {
+    backgroundColor: '#f8f8f8',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+
+  }
 })

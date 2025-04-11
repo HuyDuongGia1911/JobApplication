@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, RefreshControl, Button } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Search from '@/components/Search';
@@ -11,13 +11,27 @@ const index = () => {
   const [dataJob, setDataJob] = useState<any>([]);
   const [dataUser, setDataUser] = useState<any>();
   const [refreshing, setRefreshing] = useState(false);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     load_data();
     load_user_id();
     load_data_user();
   }, [userId]);
-
+  useEffect(() => {
+    const getAuthUser = async () => {
+      try {
+       
+        const user = await account.get();
+        console.log("(NOBRIDGE) LOG USER NAME:", user.name);
+        setUserName(user.name);
+      } catch (error) {
+        console.error("Không lấy được thông tin user:", error);
+      }
+    };
+  
+    getAuthUser();
+  }, []);
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     
@@ -52,6 +66,7 @@ const index = () => {
           userId
         );
         setDataUser(result);
+        console.log("Tên người dùng:", result.name);
       } catch (error) {
         console.log(error);
       }
@@ -77,12 +92,14 @@ const index = () => {
         <View style={styles.topView}>
           <View style={styles.welcomeTextContainer}>
             <Text style={styles.hello}>Welcome Back!</Text>
-            <Text style={styles.hello2}>My name</Text>
+            <Text style={styles.hello2}>{userName}</Text>
           </View>
-          <Image 
+          <TouchableOpacity onPress={()=>router.push('/(auth)/login')}>   
+            <Image 
             style={styles.avatar}
             source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
-          />
+           />
+          </TouchableOpacity>
         </View>
         <View style={styles.searchContainer}>
           <Search />
@@ -197,6 +214,7 @@ const index = () => {
   </ScrollView>
 </View>
           </View>
+          
       </ScrollView>
     </View>
   );

@@ -1,50 +1,150 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, Modal, TextInput } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Stack } from 'expo-router'
 import { Feather, Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { account } from '@/lib/appwrite';
+import { collection_user_id, databases, databases_id } from '@/lib/appwrite'
 
 const Person = () => {
-  const [editField, setEditField] = useState<null | 'phone' | 'email' | 'password'>(null);
-  const [phone, setPhone] = useState('9999 9999')
-  const [email, setEmail] = useState('test@gmail.com')
-  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' })
+  const [editField, setEditField] = useState<null | 'phone' | 'email' | 'password' | 'name'>(null);
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+  const [userName, setUserName] = useState('');
+  const [dataUser, setDataUser] = useState<any>();
+  const [userId, setUserId] = useState<string>('');
 
-  const handleSave = () => {
-    if (editField === 'password') {
-      if (passwords.new !== passwords.confirm) {
-        Alert.alert('Error', 'Password does not match')
-        return
+  const handleSave = async () => {
+    try {
+      if (editField === 'password') {
+        if (passwords.new !== passwords.confirm) {
+          Alert.alert('Error', 'Password does not match');
+          return;
+        }
+
+        await account.updatePassword(passwords.new, passwords.current);
+        Alert.alert('Success', 'Password updated successfully');
+        setPasswords({ current: '', new: '', confirm: '' });
       }
-      Alert.alert('Success', 'Password updated successfully')
-      setPasswords({ current: '', new: '', confirm: '' })
+
+      if (editField === 'phone') {
+        await account.updatePrefs({ phone });
+        Alert.alert('Success', 'Phone number updated successfully');
+      }
+
+      if (editField === 'email') {
+        await account.updateEmail(email, passwords.current);
+        Alert.alert('Success', 'Email updated successfully');
+      }
+
+      if (editField === 'name') {
+        await account.updateName(userName);
+        Alert.alert('Success', 'Name updated successfully');
+      }
+    } catch (error: any) {
+      console.log('Update failed:', error);
+      Alert.alert('Error', error.message || 'Something went wrong');
     }
 
-    if (editField === 'phone' || editField === 'email') {
-      Alert.alert('Success', `${editField === 'phone' ? 'Phone number' : 'Email'} updated successfully`)
-    }
+    setEditField(null);
+  };
 
-    setEditField(null)
-  }
+  const handleLogout = async () => {
+    try {
+      await account.deleteSession('current');
+      router.push('/login');
+    } catch (error) {
+      console.log('Logout Error:', error);
+    }
+  };
+
+  const load_user_id = async () => {
+    try {
+      const result = await account.get();
+      setUserId(result.$id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const load_data_user = async () => {
+    if (userId) {
+      try {
+        const result = await databases.getDocument(
+          databases_id,
+          collection_user_id,
+          userId
+        );
+        setDataUser(result);
+        console.log(result);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const user = await account.get();
+        setEmail(user.email);
+        if (user.prefs?.phone) setPhone(user.prefs.phone);
+      } catch (err) {
+        console.log('User not logged in, redirecting to login...');
+        router.replace('/(auth)/login');
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    const getAuthUser = async () => {
+      try {
+        const user = await account.get();
+        console.log("(NOBRIDGE) LOG USER NAME:", user.name);
+        setUserName(user.name);
+      } catch (error) {
+        console.error("Không lấy được thông tin user:", error);
+      }
+    };
+
+    getAuthUser();
+  }, []);
+
+  useEffect(() => {
+    load_user_id();
+    load_data_user();
+  }, [userId]);
 
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <SafeAreaView style={styles.container}>
-
         <View style={styles.avatarSection}>
           <View>
-            <Image style={styles.avatar} source={require('@/assets/images/favicon.png')} />
+            <Image style={styles.avatar} source={{ uri: dataUser?.id_image ? dataUser.id_image : 'https://randomuser.me/api/portraits/men/1.jpg' }} />
             <TouchableOpacity style={styles.editAvatar}>
               <Feather name="camera" size={18} color="#fff" />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.name}> Hoang Bao </Text>
+          <Text style={styles.name}> {userName} </Text>
         </View>
 
         <Text style={styles.editProfile}> Edit Profile</Text>
+
+        <View style={styles.infoBox}>
+          <Text style={styles.label}> Name </Text>
+          <View style={styles.inputRow}>
+            <Text style={styles.input}>{userName}</Text>
+            <TouchableOpacity onPress={() => setEditField('name')}>
+              <Feather name="edit-2" size={16} color="#333" />
+            </TouchableOpacity>
+          </View>
+        </View>
 
         <View style={styles.infoBox}>
           <Text style={styles.label}> Phone number</Text>
@@ -77,7 +177,7 @@ const Person = () => {
         </View>
 
         <View style={styles.bottom_btn}>
-          <TouchableOpacity style={styles.bottomRow}>
+          <TouchableOpacity style={styles.bottomRow} onPress={handleLogout}>
             <Text style={styles.bottomText}>Logout</Text>
             <Ionicons name="log-out-outline" size={18} color="#000" />
           </TouchableOpacity>
@@ -88,7 +188,6 @@ const Person = () => {
           <Ionicons name="arrow-forward" size={18} color="#000" />
         </TouchableOpacity>
 
-        {/* Modal de hien thi form nhap thong tin moi modal (tạo popup hộp thoại) */}
         <Modal visible={!!editField} transparent animationType="slide">
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
@@ -97,8 +196,19 @@ const Person = () => {
                   ? 'Edit Phone Number'
                   : editField === 'email'
                     ? 'Edit Email'
-                    : 'Change Password'}
+                    : editField === 'name'
+                      ? 'Edit Name'
+                      : 'Change Password'}
               </Text>
+
+              {editField === 'name' && (
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Enter your name"
+                  value={userName}
+                  onChangeText={setUserName}
+                />
+              )}
 
               {editField === 'phone' && (
                 <TextInput
@@ -111,13 +221,22 @@ const Person = () => {
               )}
 
               {editField === 'email' && (
-                <TextInput
-                  style={styles.modalInput}
-                  placeholder="Enter email"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                />
+                <>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="Enter new email"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                  />
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder="Enter current password"
+                    secureTextEntry
+                    value={passwords.current}
+                    onChangeText={(text) => setPasswords({ ...passwords, current: text })}
+                  />
+                </>
               )}
 
               {editField === 'password' && (
@@ -159,11 +278,10 @@ const Person = () => {
         </Modal>
       </SafeAreaView>
     </>
-  )
+  );
 }
 
-export default Person
-
+export default Person;
 const styles = StyleSheet.create({
   container: {
     flex: 1,

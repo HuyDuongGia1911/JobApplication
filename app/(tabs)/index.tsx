@@ -76,7 +76,7 @@ const index = () => {
           userId
         );
         setDataUser(result);
-        console.log("Tên người dùng:", result.name);
+        
       } catch (error) {
         console.log(error);
       }
@@ -144,7 +144,7 @@ const index = () => {
           <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
             <Image
               style={styles.avatar}
-              source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+              source={{ uri: dataUser?.id_image ? dataUser.id_image : 'https://randomuser.me/api/portraits/men/1.jpg' }}
             />
           </TouchableOpacity>
         </View>

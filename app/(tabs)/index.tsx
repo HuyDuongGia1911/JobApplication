@@ -207,7 +207,7 @@ const index = () => {
 
             <View style={styles.categoryGrid}>
   {datacategories.map((item: any) => {
-    const jobCount = getJobCountByCategory(item.$id); // 🟢 lấy số lượng job theo category
+    const jobCount = getJobCountByCategory(item.$id); 
 
     return (
       <View

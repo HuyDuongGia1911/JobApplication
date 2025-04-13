@@ -102,9 +102,10 @@ const Job = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Save Job List</Text>
-      </View>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Save Job List</Text>
+        </View>
+
 
       <View style={styles.subHeader}>
         <Text style={styles.savedText}>You Saved {savedJobs.length} Jobs</Text>
@@ -160,21 +161,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9FB',
   },
   header: {
-    flexDirection: 'row',
-    padding: 16,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    elevation: 3,
-    position: 'relative',
+    justifyContent: 'center',
+    backgroundColor: '#34C759',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
   },
   headerText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#34C759',
-    position: 'absolute',
-    left: 0,
-    right: 0,
+    color: '#fff',
     textAlign: 'center',
   },
   subHeader: {

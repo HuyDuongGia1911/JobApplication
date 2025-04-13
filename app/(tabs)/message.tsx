@@ -56,11 +56,9 @@ const Message = () => {
   return (
     <SafeAreaView style={styles.mainContainer}>
       <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.menu_btn}>
-          <Ionicons name='menu' size={24} color='black' />
-        </TouchableOpacity>
-        <Text style={styles.header}>Message</Text>
+        <Text style={styles.headerText}>Message</Text>
       </View>
+
 
       <ScrollView style={styles.contentContainer}>
         {users.map((user) => (
@@ -101,31 +99,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   headerContainer: {
-    flexDirection: 'row',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
     alignItems: 'center',
-    backgroundColor: '#F9F9FB',
-    height: 50,
-    paddingHorizontal: 10,
-    elevation: 2,
+    justifyContent: 'center',
+    backgroundColor: '#34C759',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 1,
+    shadowRadius: 6,
+    elevation: 5,
   },
-  header: {
+  headerText: {
     fontSize: 20,
     fontWeight: 'bold',
-    flex: 1,
+    color: '#fff',
     textAlign: 'center',
-    marginRight: 50,
   },
-  menu_btn: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
+  header: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#007AFF',
+    textAlign: 'center',
+    flex: 1,
   },
+  
   contentContainer: {
     flex: 1,
     padding: 15,

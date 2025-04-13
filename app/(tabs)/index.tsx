@@ -30,7 +30,7 @@ const index = () => {
 
         const user = await account.get();
         console.log("(NOBRIDGE) LOG USER NAME:", user.name);
-        
+
         setUserName(user.name);
       } catch (error) {
         console.error("Không lấy được thông tin user:", error);
@@ -76,7 +76,7 @@ const index = () => {
           userId
         );
         setDataUser(result);
-        
+
       } catch (error) {
         console.log(error);
       }
@@ -90,6 +90,7 @@ const index = () => {
         collection_job_id,
       );
       setDataJob(result.documents);
+      
     } catch (error) {
       console.log(error);
     }
@@ -114,16 +115,17 @@ const index = () => {
         collection_jobcategory_id
       );
       setDataCategories(result.documents);
+      
     } catch (error) {
       console.log(error);
     }
   }
-  
+
   const getJobCountByCategory = (categoryId: string) => {
     return dataJob.filter((job: any) => {
       // job.jobCategories là 1 object hoặc array object
       if (!job.jobCategories) return false;
-  
+
       if (Array.isArray(job.jobCategories)) {
         return job.jobCategories.some((cat: any) => cat.$id === categoryId);
       } else {
@@ -131,6 +133,7 @@ const index = () => {
       }
     }).length;
   };
+
   
   return (
     <View style={{ flex: 1, backgroundColor: '#4A80F0' }}>
@@ -166,7 +169,7 @@ const index = () => {
         }
       >
         <View style={styles.cardsContainer}>
-          {/* Popular Jobs Section */}
+          {/* Company Section */}
           <View style={styles.cardsHeaderContainer}>
             <Text style={styles.popularJobs}>Company</Text>
             <TouchableOpacity>
@@ -206,23 +209,23 @@ const index = () => {
             </View>
 
             <View style={styles.categoryGrid}>
-  {datacategories.map((item: any) => {
-    const jobCount = getJobCountByCategory(item.$id); 
+              {datacategories.map((item: any) => {
+                const jobCount = getJobCountByCategory(item.$id);
 
-    return (
-      <View
-        key={item.$id}
-        style={[styles.categoryCard, { backgroundColor: item.color || '#f0f0f0' }]}
-      >
-        <View style={styles.categoryIcon}>
-          <Ionicons name={item.icon_name || 'albums-outline'} size={24} color="#333" />
-        </View>
-        <Text style={styles.categoryTitle}>{item.category_name}</Text>
-        <Text style={styles.categorySubtitle}>{jobCount} Jobs</Text>
-      </View>
-    );
-  })}
-</View>
+                return (
+                  <View
+                    key={item.$id}
+                    style={[styles.categoryCard, { backgroundColor: item.color || '#f0f0f0' }]}
+                  >
+                    <View style={styles.categoryIcon}>
+                      <Ionicons name={item.icon_name || 'albums-outline'} size={24} color="#333" />
+                    </View>
+                    <Text style={styles.categoryTitle}>{item.category_name}</Text>
+                    <Text style={styles.categorySubtitle}>{jobCount} Jobs</Text>
+                  </View>
+                );
+              })}
+            </View>
 
 
           </View>
@@ -249,7 +252,10 @@ const index = () => {
               {dataJob.slice(0, 4).map((item: any) => (
                 <TouchableOpacity
                   key={item.$id}
-                  style={[styles.jobCardsContainer2, styles.horizontalJobCard]}
+                  style={[
+                    styles.jobCardsContainer2,
+                    styles.horizontalJobCard,
+                    { backgroundColor: item.jobCategories?.color || '#f0f0f0' }]}
                   onPress={() =>
                     router.push({
                       pathname: '/jobDescription',

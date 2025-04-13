@@ -11,9 +11,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useRouter } from 'expo-router';
 
-const AppliedJob = () => {
+const appliedJob = () => {
   // Danh sách job đã apply
-  const [appliedJobs, setAppliedJobs] = useState([
+  const [appliedJobs, setappliedJobs] = useState([
     {
       id: '1',
       title: 'Developer',
@@ -88,7 +88,7 @@ const AppliedJob = () => {
   );
 };
 
-export default AppliedJob;
+export default appliedJob;
 
 const styles = StyleSheet.create({
   container: {

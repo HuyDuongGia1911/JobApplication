@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, TouchableOpacity, Image, Alert, Modal, TextInput } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import { Stack } from 'expo-router'
+import { RelativePathString, Stack } from 'expo-router'
 import { Feather, Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -178,7 +178,7 @@ const Person = () => {
 
         <View style={styles.buttonContainer}>
           
-        <TouchableOpacity style={styles.appliedJobsButton} onPress={() => router.push('/appliedJob')}>
+        <TouchableOpacity style={styles.appliedJobsButton} onPress={() => router.push('/(events)/appliedJob')}>
             <Text style={styles.buttonText}>Applied Jobs</Text>
             <Ionicons name="checkmark-done" size={18} color="#fff" />
           </TouchableOpacity>

@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Job = () => {
   const [selectedTab, setSelectedTab] = useState(0);
+  const [savedJobs, setSavedJobs] = useState<string[]>([]);
 
   const tabs = ['All', 'Developer', 'Designer', 'HR Manager', 'Entrepreneur'];
 
@@ -24,7 +25,6 @@ const Job = () => {
       company: 'Sponce',
       salary: '$ 4370 / Year',
       location: 'Vietnam',
-      status: 'Open',
       type: 'Full-time',
       image: 'https://via.placeholder.com/50x50.png?text=Dev',
     },
@@ -34,7 +34,6 @@ const Job = () => {
       company: 'Google',
       salary: '$ 770 / Year',
       location: 'Sofia',
-      status: 'Close',
       type: 'Full-time',
       image: 'https://via.placeholder.com/50x50.png?text=Des',
     },
@@ -44,7 +43,6 @@ const Job = () => {
       company: 'Facebook',
       salary: '$ 8470 / Year',
       location: 'Norway',
-      status: 'Apply',
       type: 'Part-Time',
       image: 'https://via.placeholder.com/50x50.png?text=HR',
     },
@@ -54,7 +52,6 @@ const Job = () => {
       company: 'Google',
       salary: '$ 3470 / Year',
       location: 'Colombia',
-      status: 'Open',
       type: 'Full-time',
       image: 'https://via.placeholder.com/50x50.png?text=Ent',
     },
@@ -65,54 +62,58 @@ const Job = () => {
       ? jobs
       : jobs.filter((job) => job.title === tabs[selectedTab]);
 
-  const renderJobItem = ({ item }: { item: any }) => (
-    <View style={styles.jobItem}>
-      <Image source={{ uri: item.image }} style={styles.jobImage} />
-      <View style={styles.jobInfo}>
-        <Text style={styles.jobTitle}>{item.title}</Text>
-        <Text style={styles.jobCompany}>{item.company}</Text>
-        <Text style={styles.jobLocation}>{item.location}</Text>
-      </View>
-      <View style={styles.jobRight}>
-        <Text style={styles.jobSalary}>{item.salary}</Text>
-        <Text style={styles.jobType}>{item.type}</Text>
-        <TouchableOpacity
-          style={[
-            styles.statusButton,
-            {
-              backgroundColor:
-                item.status === 'Open'
-                  ? '#34C759'
-                  : item.status === 'Close'
-                  ? '#FF3B30'
-                  : '#007AFF',
-            },
-          ]}
-          onPress={() => router.push(`/jobDescription?jobId=${item.id}`)}
-        >
-          <Text style={styles.statusText}>{item.status}</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const toggleSaveJob = (jobId: string) => {
+    setSavedJobs((prev) =>
+      prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
+    );
+  };
+
+  const renderJobItem = ({ item }: { item: any }) => {
+    const isSaved = savedJobs.includes(item.id);
+
+    return (
+      <TouchableOpacity
+        style={styles.jobItem}
+        onPress={() => router.push(`/jobDescription?jobId=${item.id}`)}
+      >
+        <Image source={{ uri: item.image }} style={styles.jobImage} />
+        <View style={styles.jobInfo}>
+          <Text style={styles.jobTitle}>{item.title}</Text>
+          <Text style={styles.jobCompany}>{item.company}</Text>
+          <Text style={styles.jobLocation}>{item.location}</Text>
+        </View>
+        <View style={styles.jobRight}>
+          <Text style={styles.jobSalary}>{item.salary}</Text>
+          <Text style={styles.jobType}>{item.type}</Text>
+          <TouchableOpacity
+            onPress={() => toggleSaveJob(item.id)}
+            style={{ padding: 4 }}
+          >
+            <Ionicons
+              name={isSaved ? 'heart' : 'heart-outline'}
+              size={24}
+              color={isSaved ? '#FF3B30' : '#999'}
+            />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Save Job List</Text>
       </View>
 
-      {/* Sub Header */}
       <View style={styles.subHeader}>
-        <Text style={styles.savedText}>You Saved 100 Jobs</Text>
+        <Text style={styles.savedText}>You Saved {savedJobs.length} Jobs</Text>
         <Image
           source={{ uri: 'https://via.placeholder.com/30' }}
           style={styles.subHeaderIcon}
         />
       </View>
 
-      {/* Tabs */}
       <View style={styles.tabsWrapper}>
         <ScrollView
           horizontal
@@ -141,7 +142,6 @@ const Job = () => {
         </ScrollView>
       </View>
 
-      {/* Job List */}
       <FlatList
         data={filteredJobs}
         renderItem={renderJobItem}
@@ -163,16 +163,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 16,
     alignItems: 'center',
-    justifyContent: 'space-between', 
+    justifyContent: 'space-between',
     backgroundColor: '#fff',
     elevation: 3,
-    position: 'relative'
+    position: 'relative',
   },
   headerText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#34C759',
-    position: 'absolute', 
+    position: 'absolute',
     left: 0,
     right: 0,
     textAlign: 'center',
@@ -265,15 +265,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginVertical: 4,
-  },
-  statusButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 15,
-  },
-  statusText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
 });

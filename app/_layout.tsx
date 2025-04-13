@@ -1,7 +1,9 @@
 import { Stack } from "expo-router";
+import { SavedJobsProvider } from '@/app/saveJobsContext';
 
 const Layout = () => {
   return (
+    <SavedJobsProvider>
     <Stack>
       <Stack.Screen
         name="(tabs)"
@@ -34,6 +36,7 @@ const Layout = () => {
         }}
       />
     </Stack>
+    </SavedJobsProvider>
   );
 };
 

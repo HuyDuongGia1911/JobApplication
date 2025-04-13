@@ -1,10 +1,11 @@
-import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View, Image, ToastAndroid  } from 'react-native'
 import React, {useState, useEffect} from 'react'
 
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { collection_job_id, databases, databases_id } from '@/lib/appwrite'
 import { useLocalSearchParams } from 'expo-router';
+import { useSavedJobs } from '@/app/saveJobsContext';
 
 const jobDescription = () => {
   const [selected, setSelected] = useState(0);
@@ -14,6 +15,7 @@ const jobDescription = () => {
     }
     const { jobId } = useLocalSearchParams();
     const [dataJob, setDataJob] = useState<any>(null);
+    const {isJobSaved, toggleSaveJob} = useSavedJobs();
   
     useEffect(() => {
       if (jobId) {
@@ -36,6 +38,18 @@ const jobDescription = () => {
         console.log(error);
       }
     };
+
+    const handleSaveJob = () => {
+      if (jobId) {
+        toggleSaveJob(jobId as string);
+        // Hiển thị thông báo
+        ToastAndroid.show(
+          isJobSaved(jobId as string) ? 'Đã bỏ lưu công việc' : 'Đã lưu công việc',
+          ToastAndroid.SHORT
+        );
+      }
+    };
+
   if (!dataJob) return <Text>Loading...</Text>;
   return (
     <View style={styles.container}>
@@ -107,8 +121,14 @@ const jobDescription = () => {
         }
       </View>
       <View style = {styles.bottomContainer}>
-        <TouchableOpacity style={styles.heartContainer}>
-          <Ionicons  name='heart-outline' style={styles.iconHeart}/>
+        <TouchableOpacity style={styles.heartContainer} onPress={handleSaveJob}>
+          <Ionicons 
+            name={isJobSaved(jobId as string) ? 'heart' : 'heart-outline'} 
+            style={[
+              styles.iconHeart, 
+              isJobSaved(jobId as string) && styles.iconHeartActive
+            ]}
+          />
         </TouchableOpacity>
         <TouchableOpacity style={styles.applyContainer} onPress={() => router.push({ pathname: '/(events)/submit', params: { jobId } })} >
 
@@ -219,7 +239,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEEEEE',
     borderRadius: 10,
     padding: 14,
-    height: 600,
+    height: 450,
   },
   descriptionContent:{
     fontSize: 15,    
@@ -280,6 +300,9 @@ const styles = StyleSheet.create({
   },
   iconHeart:{
     fontSize: 32,
+    color: '#F97459',
+  },
+  iconHeartActive: {
     color: '#F97459',
   },
   applyContainer:{

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,86 +7,73 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSavedJobs } from '@/app/saveJobsContext';
+import { databases, databases_id, collection_job_id } from '@/lib/appwrite';
 
 const Job = () => {
   const [selectedTab, setSelectedTab] = useState(0);
-  const [savedJobs, setSavedJobs] = useState<string[]>([]);
+  const { savedJobs, toggleSaveJob } = useSavedJobs();
+  const [allJobs, setAllJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const tabs = ['All', 'Developer', 'Designer', 'HR Manager', 'Entrepreneur'];
 
-  const jobs = [
-    {
-      id: '1',
-      title: 'Developer',
-      company: 'Sponce',
-      salary: '$ 4370 / Year',
-      location: 'Vietnam',
-      type: 'Full-time',
-      image: 'https://via.placeholder.com/50x50.png?text=Dev',
-    },
-    {
-      id: '2',
-      title: 'Designer',
-      company: 'Google',
-      salary: '$ 770 / Year',
-      location: 'Sofia',
-      type: 'Full-time',
-      image: 'https://via.placeholder.com/50x50.png?text=Des',
-    },
-    {
-      id: '3',
-      title: 'HR Manager',
-      company: 'Facebook',
-      salary: '$ 8470 / Year',
-      location: 'Norway',
-      type: 'Part-Time',
-      image: 'https://via.placeholder.com/50x50.png?text=HR',
-    },
-    {
-      id: '4',
-      title: 'Entrepreneur',
-      company: 'Google',
-      salary: '$ 3470 / Year',
-      location: 'Colombia',
-      type: 'Full-time',
-      image: 'https://via.placeholder.com/50x50.png?text=Ent',
-    },
-  ];
+  useEffect(() => {
+    fetchJobs();
+  }, []);
 
-  const filteredJobs =
-    selectedTab === 0
-      ? jobs
-      : jobs.filter((job) => job.title === tabs[selectedTab]);
-
-  const toggleSaveJob = (jobId: string) => {
-    setSavedJobs((prev) =>
-      prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
-    );
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      // Fetch all jobs from your database
+      const response = await databases.listDocuments(
+        databases_id,
+        collection_job_id
+      );
+      setAllJobs(response.documents);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Get saved jobs
+  const savedJobsList = allJobs.filter(job => savedJobs.includes(job.$id));
+
+  // Filter jobs based on selected tab
+  const filteredJobs =
+    selectedTab === 0
+      ? savedJobsList
+      : savedJobsList.filter((job) => {
+          // Adjust this filter based on your job categories structure
+          return job.jobCategories?.category_name === tabs[selectedTab];
+        });
+
   const renderJobItem = ({ item }: { item: any }) => {
-    const isSaved = savedJobs.includes(item.id);
+    const isSaved = savedJobs.includes(item.$id);
 
     return (
       <TouchableOpacity
         style={styles.jobItem}
-        onPress={() => router.push(`/jobDescription?jobId=${item.id}`)}
+        onPress={() => router.push(`/jobDescription?jobId=${item.$id}`)}
       >
         <Image source={{ uri: item.image }} style={styles.jobImage} />
         <View style={styles.jobInfo}>
           <Text style={styles.jobTitle}>{item.title}</Text>
-          <Text style={styles.jobCompany}>{item.company}</Text>
-          <Text style={styles.jobLocation}>{item.location}</Text>
+          <Text style={styles.jobCompany}>{item.company?.corp_name}</Text>
+          <Text style={styles.jobLocation}>{item.company?.city}, {item.company?.nation}</Text>
         </View>
         <View style={styles.jobRight}>
-          <Text style={styles.jobSalary}>{item.salary}</Text>
-          <Text style={styles.jobType}>{item.type}</Text>
+          <Text style={styles.jobSalary}>$ {item.salary}</Text>
+          <Text style={styles.jobType}>{item.jobTypes?.type_name}</Text>
           <TouchableOpacity
-            onPress={() => toggleSaveJob(item.id)}
+            onPress={() => toggleSaveJob(item.$id)}
             style={{ padding: 4 }}
           >
             <Ionicons
@@ -102,10 +89,9 @@ const Job = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>Save Job List</Text>
-        </View>
-
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Save Job List</Text>
+      </View>
 
       <View style={styles.subHeader}>
         <Text style={styles.savedText}>You Saved {savedJobs.length} Jobs</Text>
@@ -143,15 +129,27 @@ const Job = () => {
         </ScrollView>
       </View>
 
-      <FlatList
-        data={filteredJobs}
-        renderItem={renderJobItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 16 }}
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#34C759" />
+        </View>
+      ) : filteredJobs.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="heart-dislike-outline" size={64} color="#ccc" />
+          <Text style={styles.emptyText}>No saved jobs found</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredJobs}
+          renderItem={renderJobItem}
+          keyExtractor={(item) => item.$id}
+          contentContainerStyle={{ padding: 16 }}
+        />
+      )}
     </SafeAreaView>
   );
 };
+
 
 export default Job;
 
@@ -268,5 +266,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginVertical: 4,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: '#666',
+    marginTop: 16,
+    textAlign: 'center',
   },
 });

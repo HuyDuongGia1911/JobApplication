@@ -176,17 +176,19 @@ const Person = () => {
           </View>
         </View>
 
-        <View style={styles.bottom_btn}>
-          <TouchableOpacity style={styles.bottomRow} onPress={handleLogout}>
-            <Text style={styles.bottomText}>Logout</Text>
-            <Ionicons name="log-out-outline" size={18} color="#000" />
+        <View style={styles.buttonContainer}>
+          
+        <TouchableOpacity style={styles.appliedJobsButton} onPress={() => router.push('/appliedJob')}>
+            <Text style={styles.buttonText}>Applied Jobs</Text>
+            <Ionicons name="checkmark-done" size={18} color="#fff" />
           </TouchableOpacity>
-        </View>
 
-        <TouchableOpacity style={styles.bottomRow}>
-          <Text style={styles.bottomText}>Setting</Text>
-          <Ionicons name="arrow-forward" size={18} color="#000" />
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.buttonText}>Logout</Text>
+            <Ionicons name="log-out-outline" size={18} color="#fff" />
+          </TouchableOpacity>
+
+        </View>
 
         <Modal visible={!!editField} transparent animationType="slide">
           <View style={styles.modalContainer}>
@@ -282,6 +284,7 @@ const Person = () => {
 }
 
 export default Person;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -298,12 +301,12 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   editAvatar: {
-    position: 'absolute', //can chinh theo vi tri phan tu cha gan nhat
+    position: 'absolute',
     bottom: 0,
     right: 0,
     backgroundColor: '#333',
     borderRadius: 50,
-    padding: 5, //tao khoang cach giua cac canh cua phan tu
+    padding: 5,
   },
   name: {
     fontSize: 20,
@@ -338,49 +341,64 @@ const styles = StyleSheet.create({
     color: '#000',
     flex: 1,
   },
-  bottom_btn: {
+  buttonContainer: {
     marginTop: 30,
-    marginBottom: 20,
+    paddingHorizontal: 20,
   },
-  bottomRow: {
+  appliedJobsButton: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderColor: '#eee',
+    backgroundColor: '#4A90E2',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    justifyContent: 'center',
   },
-  bottomText: {
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF4F4F',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginTop: 15,
+    justifyContent: 'center',
+  },
+
+  buttonText: {
     fontSize: 16,
-    color: '#000',
-    fontWeight: 'bold',
+    color: '#fff',
+    marginRight: 10,
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 20,
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderRadius: 12,
     padding: 20,
+    borderRadius: 10,
+    width: '80%',
+    alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   modalInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    width: '100%',
     padding: 10,
-    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 15,
   },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    width: '100%',
   },
-})
+});

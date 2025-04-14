@@ -11,12 +11,16 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [isRecruiter, setIsRecruiter] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(true);
+  const [name, setName] = useState('');
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword) {
       Alert.alert('Thông báo', 'Vui lòng nhập đầy đủ thông tin.');
       return;
     }
+    
 
     if (password !== confirmPassword) {
       Alert.alert('Thông báo', 'Mật khẩu xác nhận không khớp.');
@@ -35,6 +39,8 @@ export default function RegisterScreen() {
         {
           isAdmin: false,
           id_image: null,
+          isRecruiter: isRecruiter,
+          name: name,
         }
       );
       Alert.alert('Thành công', 'Đăng ký thành công, vui lòng đăng nhập.');
@@ -49,7 +55,43 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Popup chọn vai trò */}
+      {showRoleModal && (
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Bạn là ai?</Text>
+  
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setIsRecruiter(false);
+                setShowRoleModal(false);
+              }}
+            >
+              <Text style={styles.modalButtonText}>Người tìm việc</Text>
+            </TouchableOpacity>
+  
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setIsRecruiter(true);
+                setShowRoleModal(false);
+              }}
+            >
+              <Text style={styles.modalButtonText}>Nhà tuyển dụng</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+  
+      {/* Giao diện chính đăng ký */}
       <Text style={styles.title}>Đăng ký</Text>
+      <TextInput
+  placeholder="Họ và tên"
+  value={name}
+  onChangeText={setName}
+  style={styles.input}
+/>
 
       <TextInput
         placeholder="Email"
@@ -73,7 +115,7 @@ export default function RegisterScreen() {
         secureTextEntry
         style={styles.input}
       />
-
+  
       <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
         {loading ? (
           <ActivityIndicator color="#fff" />
@@ -81,12 +123,13 @@ export default function RegisterScreen() {
           <Text style={styles.buttonText}>Đăng ký</Text>
         )}
       </TouchableOpacity>
-
+  
       <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
         <Text style={styles.link}>Đã có tài khoản? Đăng nhập</Text>
       </TouchableOpacity>
     </View>
   );
+  
 }
 
 const styles = StyleSheet.create({
@@ -102,4 +145,39 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
   link: { color: '#007AFF', textAlign: 'center', marginTop: 10 },
+  modalContainer: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  modalBox: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  
 });

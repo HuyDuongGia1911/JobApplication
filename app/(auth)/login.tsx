@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { account } from '../../lib/appwrite';
-
+import { databases_id, collection_user_id, databases } from '../../lib/appwrite';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,20 +15,48 @@ export default function LoginScreen() {
   
     setLoading(true);
     try {
-     
+      // Xóa session cũ nếu có
       try {
         await account.deleteSession('current');
       } catch (e) {
-       
+        console.log("Không có session để xóa");
       }
   
+      // Tạo session mới
+      const session = await account.createEmailPasswordSession(email, password);
       
-      await account.createEmailPasswordSession(email, password);
+      // Lấy thông tin user từ session hiện tại
+      const user = await account.get();
+      
+      // Kiểm tra xem user đã tồn tại trong database chưa
+      try {
+        await databases.getDocument(
+          databases_id,
+          collection_user_id,
+          user.$id
+        );
+        
+        // Nếu không bị lỗi nghĩa là document đã tồn tại
+        console.log("User đã tồn tại trong database");
+      } catch (error) {
+        // Nếu chưa tồn tại thì tạo mới
+        await databases.createDocument(
+          databases_id,
+          collection_user_id,
+          user.$id, // Sử dụng user ID làm document ID
+          {
+            name: user.name,
+            email: user.email,
+            isAdmin: false,
+            isRecruiter: false
+          }
+        );
+      }
   
-     
       router.replace('/(tabs)');
     } catch (error: any) {
       alert('Login failed: ' + error.message);
+      console.error("Chi tiết lỗi:", error);
     } finally {
       setLoading(false);
     }

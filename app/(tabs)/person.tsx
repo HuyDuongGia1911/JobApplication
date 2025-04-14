@@ -30,18 +30,37 @@ const Person = () => {
       }
 
       if (editField === 'phone') {
-        await account.updatePrefs({ phone });
+        await databases.updateDocument(
+          databases_id,
+          collection_user_id,
+          userId,
+          { phone: phone }
+        );
         Alert.alert('Success', 'Phone number updated successfully');
       }
 
       if (editField === 'email') {
         await account.updateEmail(email, passwords.current);
         Alert.alert('Success', 'Email updated successfully');
+        await databases.updateDocument(
+          databases_id,
+          collection_user_id,
+          userId,
+          { email: email }
+        );
+        
       }
 
       if (editField === 'name') {
-        await account.updateName(userName);
+        
+        await databases.updateDocument(
+          databases_id,
+          collection_user_id,
+          userId,
+          { name: userName }
+        );
         Alert.alert('Success', 'Name updated successfully');
+        load_data_user();
       }
     } catch (error: any) {
       console.log('Update failed:', error);
@@ -78,28 +97,17 @@ const Person = () => {
           userId
         );
         setDataUser(result);
-       
+        setUserName(result.name || '');
+        setPhone(result.phone || '');
       } catch (error) {
         console.log(error);
       }
     }
   };
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const user = await account.get();
-        setEmail(user.email);
-        if (user.prefs?.phone) setPhone(user.prefs.phone);
-      } catch (err) {
-        console.log('User not logged in, redirecting to login...');
-        router.replace('/(auth)/login');
-      }
-    };
+  
 
-    fetchProfile();
-  }, []);
-
+   
   useEffect(() => {
     const getAuthUser = async () => {
       try {
@@ -131,7 +139,7 @@ const Person = () => {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.name}> {userName} </Text>
+          <Text style={styles.name}>{dataUser?.name || 'No name'}</Text>
         </View>
 
         <Text style={styles.editProfile}> Edit Profile</Text>
@@ -177,12 +185,30 @@ const Person = () => {
         </View>
 
         <View style={styles.buttonContainer}>
-          
-        <TouchableOpacity style={styles.appliedJobsButton} onPress={() => router.push('/(events)/appliedJob')}>
+
+          <TouchableOpacity style={styles.appliedJobsButton} onPress={() => router.push('/(events)/appliedJob')}>
             <Text style={styles.buttonText}>Applied Jobs</Text>
             <Ionicons name="checkmark-done" size={18} color="#fff" />
           </TouchableOpacity>
-
+          {dataUser?.isRecruiter && (
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#4A90E2',
+                padding: 12,
+                borderRadius: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                
+              }}
+              onPress={() => router.push('/(events)/addJob')}
+            >
+              <Ionicons name="add-circle-outline" size={20} color="#fff" />
+              <Text style={{ color: '#fff', fontWeight: '600', marginLeft: 8 }}>
+                Thêm công việc
+              </Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>
             <Ionicons name="log-out-outline" size={18} color="#fff" />
@@ -278,6 +304,7 @@ const Person = () => {
             </View>
           </View>
         </Modal>
+
       </SafeAreaView>
     </>
   );

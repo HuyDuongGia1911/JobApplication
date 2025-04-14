@@ -1,139 +1,163 @@
-import { StyleSheet, Text, TouchableOpacity, View, Image, ToastAndroid  } from 'react-native'
-import React, {useState, useEffect} from 'react'
+import { StyleSheet, Text, TouchableOpacity, View, Image, ToastAndroid } from 'react-native'
+import React, { useState, useEffect } from 'react'
 
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import { collection_job_id, databases, databases_id } from '@/lib/appwrite'
+import { collection_job_id, collection_user_id, databases, databases_id } from '@/lib/appwrite'
 import { useLocalSearchParams } from 'expo-router';
 import { useSavedJobs } from '@/app/saveJobsContext';
-
 const jobDescription = () => {
   const [selected, setSelected] = useState(0);
-  
-    const Switch_Selected = async ( index : number) => {
-      setSelected(index);
+
+  const Switch_Selected = async (index: number) => {
+    setSelected(index);
+  }
+  const { jobId } = useLocalSearchParams();
+  const [dataJob, setDataJob] = useState<any>(null);
+  const { isJobSaved, toggleSaveJob } = useSavedJobs();
+  const [posterInfo, setPosterInfo] = useState<{ name?: string, email?: string }>({});
+  useEffect(() => {
+    if (jobId) {
+      load_data(jobId as string);
     }
-    const { jobId } = useLocalSearchParams();
-    const [dataJob, setDataJob] = useState<any>(null);
-    const {isJobSaved, toggleSaveJob} = useSavedJobs();
-  
-    useEffect(() => {
-      if (jobId) {
-        load_data(jobId as string);
-      }
-    }, [jobId]);
-    
-  
-    const load_data = async (id: string) => {
+  }, [jobId]);
 
-      try {
-        const result = await databases.getDocument(
-          databases_id,  // databaseId
-          collection_job_id,  // collectionId
-          id // Lấy công việc theo ID
-        );
-        setDataJob(result);
-        console.log(result);
-      } catch (error) {
-        console.log(error);
-      }
-    };
 
-    const handleSaveJob = () => {
-      if (jobId) {
-        toggleSaveJob(jobId as string);
-        // Hiển thị thông báo
-        ToastAndroid.show(
-          isJobSaved(jobId as string) ? 'Đã bỏ lưu công việc' : 'Đã lưu công việc',
-          ToastAndroid.SHORT
-        );
+  const load_data = async (id: string) => {
+
+    try {
+      const result = await databases.getDocument(
+        databases_id,
+        collection_job_id,
+        id
+      );
+
+      if (result.users?.$id) {
+        try {
+
+          const userDoc = await databases.getDocument(
+            databases_id,
+            collection_user_id,
+            result.users.$id
+          );
+
+
+          if (userDoc.name) {
+            setPosterInfo({
+              name: userDoc.name,
+              email: userDoc.email
+            });
+          }
+        } catch (dbError) {
+          console.log("Không lấy được từ Database:", dbError);
+        }
       }
-    };
+      setDataJob(result);
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSaveJob = () => {
+    if (jobId) {
+      toggleSaveJob(jobId as string);
+      // Hiển thị thông báo
+      ToastAndroid.show(
+        isJobSaved(jobId as string) ? 'Đã bỏ lưu công việc' : 'Đã lưu công việc',
+        ToastAndroid.SHORT
+      );
+    }
+  };
 
   if (!dataJob) return <Text>Loading...</Text>;
   return (
     <View style={styles.container}>
-        <View style={styles.topView}>
-          <TouchableOpacity style={styles.buttons} onPress={() => router.push("/")}>
-            <Ionicons name='arrow-back' size={24}/>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.buttons} onPress={() => router.push("/")}>
-            <Ionicons name='share-social' size={24}/>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.headerContainer}>
+      <View style={styles.topView}>
+        <TouchableOpacity style={styles.buttons} onPress={() => router.push("/")}>
+          <Ionicons name='arrow-back' size={24} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.buttons} onPress={() => router.push("/")}>
+          <Ionicons name='share-social' size={24} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.headerContainer}>
         <View style={styles.jobImageContainer}>
-          <Image 
-            style = {styles.jobImage}
-            source={{uri:dataJob.image}} 
+          <Image
+            style={styles.jobImage}
+            source={{ uri: dataJob.image }}
           />
         </View>
-        <View style = {styles.companyName}>
+        <View style={styles.companyName}>
 
           <Text style={styles.companyNameText}>{dataJob?.title}</Text>
           <Text style={styles.companyNameText}>{dataJob?.company?.corp_name}</Text>
         </View>
         <View style={styles.jobInfoContainer}>
           <View style={styles.jobInfoBox}>
-            <Text style={styles.jobInfoText}>{dataJob?.jobTypes?.type_name || "No Job Type"}</Text> 
+            <Text style={styles.jobInfoText}>{dataJob?.jobTypes?.type_name || "No Job Type"}</Text>
           </View>
           <View style={styles.jobInfoBox}>
             <Text style={styles.jobInfoText}>{dataJob?.jobCategories?.category_name || "No Job Category"}</Text>
           </View>
         </View>
-        <View style ={styles.companyInfoBox}>
+        <View style={styles.companyInfoBox}>
           <View>
-            <Text style={styles.companyInfoText}>$ {dataJob?.salary}</Text> 
+            <Text style={styles.companyInfoText}>$ {dataJob?.salary}</Text>
           </View>
-          <View style={styles.companyLocation}> 
-            <Text style = {styles.companyInfoText}>{dataJob?.company?.city} /</Text>
-            <Ionicons style = {styles.companyInfoText2} name='location' size={24}/>
-            <Text style = {styles.companyInfoText2}>{dataJob?.company?.nation || "No Nation"}</Text>
+          <View style={styles.companyLocation}>
+            <Text style={styles.companyInfoText}>{dataJob?.company?.city} /</Text>
+            <Ionicons style={styles.companyInfoText2} name='location' size={24} />
+            <Text style={styles.companyInfoText2}>{dataJob?.company?.nation || "No Nation"}</Text>
           </View>
         </View>
-        </View>
-      <View style = {styles.tabs}>
+      </View>
+      <View style={styles.tabs}>
         <TouchableOpacity style={[styles.tabBox, selected === 0 ? styles.tabActive : styles.tabNormal]} onPress={() => Switch_Selected(0)}>
           <Text style={[selected === 0 ? styles.tabActiveText : styles.tabNormalText]}>About</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.tabBox, selected === 1 ? styles.tabActive : styles.tabNormal]} onPress={() => Switch_Selected(1)}>
-        <Text style={[selected === 1 ? styles.tabActiveText : styles.tabNormalText]}>Qualification</Text>
+          <Text style={[selected === 1 ? styles.tabActiveText : styles.tabNormalText]}>Qualification</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.tabBox, selected === 2 ? styles.tabActive : styles.tabNormal]} onPress={() => Switch_Selected(2)}>
-        <Text style={[selected === 2 ? styles.tabActiveText : styles.tabNormalText]}>Responsibility</Text>
+          <Text style={[selected === 2 ? styles.tabActiveText : styles.tabNormalText]}>Responsibility</Text>
         </TouchableOpacity>
       </View>
-      <View style = {styles.contentTab}>
+      <View style={styles.contentTab}>
         {selected === 0 ? (
           <View>
-            <Text style={styles.descriptionContent}>{dataJob.corp_description}</Text>
+            <Text style={styles.descriptionContent}>
+            Người đăng: {posterInfo.name || posterInfo.email || "Ẩn danh"}
+            </Text>
+            <Text style={styles.descriptionContent}>{dataJob.job_Description}</Text>
             <Text style={styles.descriptionContent}>{dataJob.skills_required}</Text>
             <Text style={styles.descriptionContent}>{dataJob.responsibilities}</Text>
+
           </View>
         )
-          : selected === 1 ?(
+          : selected === 1 ? (
             <Text style={styles.descriptionContent}>{dataJob.skills_required}</Text>
-            
+
           )
-          : (
-            <Text style={styles.descriptionContent}>{dataJob.responsibilities}</Text>
-          )
+            : (
+              <Text style={styles.descriptionContent}>{dataJob.responsibilities}</Text>
+            )
         }
       </View>
-      <View style = {styles.bottomContainer}>
+      <View style={styles.bottomContainer}>
         <TouchableOpacity style={styles.heartContainer} onPress={handleSaveJob}>
-          <Ionicons 
-            name={isJobSaved(jobId as string) ? 'heart' : 'heart-outline'} 
+          <Ionicons
+            name={isJobSaved(jobId as string) ? 'heart' : 'heart-outline'}
             style={[
-              styles.iconHeart, 
+              styles.iconHeart,
               isJobSaved(jobId as string) && styles.iconHeartActive
             ]}
           />
         </TouchableOpacity>
         <TouchableOpacity style={styles.applyContainer} onPress={() => router.push({ pathname: '/(events)/submit', params: { jobId } })} >
 
-            <Text style = {styles.applyText}>Apply Now</Text>
-          
+          <Text style={styles.applyText}>Apply Now</Text>
+
         </TouchableOpacity>
       </View>
     </View>
@@ -161,7 +185,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   jobImage: {
-    height:'100%',
+    height: '100%',
     width: 100,
     alignContent: 'center',
     justifyContent: 'center',
@@ -174,15 +198,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: "center",
     backgroundColor: '#EBF2FC',
-    
-    
-    
+
+
+
   },
   companyName: {
-    
+
     alignItems: 'center',
     justifyContent: 'center',
-    
+
     backgroundColor: '#EBF2FC',
   },
   companyNameText: {
@@ -193,8 +217,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    
-  
+
+
   },
   companyInfoText: {
     fontSize: 15,
@@ -205,7 +229,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'black',
     color: '#a9a9a9'
   },
-  tabs:{
+  tabs: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
@@ -220,71 +244,71 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: "center",
     flex: 1,
-    
+
   },
-  tabNormal:{
+  tabNormal: {
     backgroundColor: '#EEEEEE'
   },
-  tabNormalText:{
+  tabNormalText: {
     color: '#AAAAAA'
   },
-  tabActive:{
+  tabActive: {
     backgroundColor: '#2F264F'
   },
-  tabActiveText:{
+  tabActiveText: {
     color: 'white',
   },
 
-  contentTab:{
+  contentTab: {
     backgroundColor: '#EEEEEE',
     borderRadius: 10,
     padding: 14,
     height: 450,
   },
-  descriptionContent:{
-    fontSize: 15,    
+  descriptionContent: {
+    fontSize: 15,
     color: 'black',
     textAlign: 'justify',
   },
-  companyLocation:{
+  companyLocation: {
     justifyContent: 'center',
-    flexDirection: 'row', 
+    flexDirection: 'row',
     backgroundColor: '#EBF2FC',
   },
-  jobInfoContainer:{
+  jobInfoContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    
+
     gap: 10,
-    
+
   },
-  jobInfoBox:{
+  jobInfoBox: {
     backgroundColor: 'blue',
     borderWidth: 0,
     borderRadius: 15,
     padding: 5,
   },
-  jobInfoText:{
+  jobInfoText: {
     fontSize: 15,
     fontWeight: 'bold',
     color: 'white',
   },
-  headerContainer:{
+  headerContainer: {
     marginBottom: 20,
-    borderBottomRightRadius:10,
-    borderBottomLeftRadius:10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
     backgroundColor: '#EBF2FC',
     paddingHorizontal: 20,
     paddingVertical: 10,
   },
-  bottomContainer:{
+  bottomContainer: {
     flexDirection: 'row',
     alignItems: "center",
     gap: 15,
     paddingVertical: 20,
     paddingHorizontal: 10,
   },
-  heartContainer:{
+  heartContainer: {
     borderWidth: 0,
     backgroundColor: '#fff',
     shadowColor: '#000',
@@ -298,14 +322,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconHeart:{
+  iconHeart: {
     fontSize: 32,
     color: '#F97459',
   },
   iconHeartActive: {
     color: '#F97459',
   },
-  applyContainer:{
+  applyContainer: {
     flex: 1,
     height: 60,
     backgroundColor: '#F97459',
@@ -317,9 +341,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 6,
-    
+
   },
-  applyText:{
+  applyText: {
     fontSize: 20,
     color: 'white',
     fontWeight: 'bold',

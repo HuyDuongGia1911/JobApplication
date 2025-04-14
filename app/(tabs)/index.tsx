@@ -12,7 +12,7 @@ const index = () => {
   const [dataUser, setDataUser] = useState<any>();
   const [refreshing, setRefreshing] = useState(false);
   const [datacategories, setDataCategories] = useState<any>([]);
-  const [userName, setUserName] = useState('');
+  
 
   const [dataCompany, setDataCompany] = useState<any>([])
 
@@ -23,23 +23,7 @@ const index = () => {
     load_data_company();
     load_data_categories();
   }, [userId]);
-  useEffect(() => {
-
-    const getAuthUser = async () => {
-      try {
-
-        const user = await account.get();
-        console.log("(NOBRIDGE) LOG USER NAME:", user.name);
-
-        setUserName(user.name);
-      } catch (error) {
-        console.error("Không lấy được thông tin user:", error);
-      }
-    };
-
-
-    getAuthUser();
-  }, []);
+ 
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -62,6 +46,7 @@ const index = () => {
     try {
       const result = await account.get();
       setUserId(result.$id);
+      
     } catch (error) {
       console.log(error);
     }
@@ -76,6 +61,7 @@ const index = () => {
           userId
         );
         setDataUser(result);
+       console.log(result)
 
       } catch (error) {
         console.log(error);
@@ -142,7 +128,7 @@ const index = () => {
         <View style={styles.topView}>
           <View style={styles.welcomeTextContainer}>
             <Text style={styles.hello}>Welcome Back!</Text>
-            <Text style={styles.hello2}>{userName}</Text>
+            {dataUser?.name && <Text style={styles.hello2}>{dataUser.name}</Text>}
           </View>
           <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
             <Image

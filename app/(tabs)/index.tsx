@@ -185,12 +185,63 @@ const index = () => {
             </ScrollView>
           </View>
 
+              {/* Recommend Jobs Section */}
+              <View style={[styles.cardsHeaderContainer, { marginTop: 20 }]}>
+                <Text style={styles.popularJobs}>Recommend Jobs</Text>
+                <TouchableOpacity onPress={() => router.push('/(events)/jobList')}>
+                  <Text style={styles.showAllBtn}>Show all</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.horizontalScrollContainer}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
+                >
+                  {dataJob.slice(0, 4).map((item: any) => (
+                    <TouchableOpacity
+                      key={item.$id}
+                      style={[
+                        styles.jobCardsContainer2,
+                        styles.horizontalJobCard,
+                        { backgroundColor: item.jobCategories?.color || '#f0f0f0' }
+                      ]}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/jobDescription',
+                          params: { jobId: item.$id },
+                        })
+                      }
+                    >
+                      <Image style={styles.jobImages} source={{ uri: item.image }} />
+                      <View style={styles.jobCardsDescription2}>
+                        <Text style={styles.jobCorp}>
+                          Công ty: {item.company?.corp_name ?? 'Không rõ'}
+                        </Text>
+                        <View style={styles.jobCardsDescription}>
+                          <Text
+                            style={styles.jobTitle}
+                            numberOfLines={2}
+                            ellipsizeMode="tail"
+                          >
+                            {item.title}
+                          </Text>
+                          <Text style={styles.jobNation}>
+                            {item.company?.nation ?? 'Không rõ'}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
 
           {/* Category Section */}
           <View style={{ marginBottom: 20 }}>
             <View style={styles.cardsHeaderContainer}>
-              <Text style={styles.popularJobs}>Category</Text>
-              <TouchableOpacity>
+              <Text style={styles.popularJobs}>Category</Text>  
+              <TouchableOpacity onPress={() => router.push({ pathname: "/(events)/companyDescription" })}>
                 <Text style={styles.showAllBtn}>Show all</Text>
               </TouchableOpacity>
             </View>

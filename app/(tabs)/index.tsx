@@ -158,7 +158,7 @@ const index = () => {
           {/* Company Section */}
           <View style={styles.cardsHeaderContainer}>
             <Text style={styles.popularJobs}>Company</Text>
-            <TouchableOpacity onPress={() => router.push('/(events)/companyList')}>
+            <TouchableOpacity onPress={() => router.push('/companyList')}>
                 <Text style={styles.showAllBtn}>Show all</Text>
             </TouchableOpacity>
 

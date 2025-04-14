@@ -29,7 +29,7 @@ const companies = [
 const { width } = Dimensions.get('window');
 const cardSize = width / 2 - 32;
 
-const CompanyList = () => {
+const companyList = () => {
 
 
   const handleCompanyPress = (companyId: string) => {
@@ -72,7 +72,7 @@ const CompanyList = () => {
     </View>
   );
 };
-
+export default companyList;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -139,4 +139,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CompanyList;

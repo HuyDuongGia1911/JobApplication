@@ -23,6 +23,18 @@ const Layout = () => {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="companyDescription"
+        options={{
+          headerShown: false,
+        }}
+      />
+            <Stack.Screen
+        name="companyList"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 };

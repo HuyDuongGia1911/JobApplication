@@ -65,3 +65,4 @@ export const useSavedJobs = () => {
     }
     return context;
 };
+export default SavedJobsContext

@@ -34,6 +34,14 @@ const Layout = () => {
         options={{
           headerShown: false,
         }}
+        
+      />
+      <Stack.Screen
+        name="addJob"
+        options={{
+          headerShown: false,
+        }}
+        
       />
     </Stack>
   );

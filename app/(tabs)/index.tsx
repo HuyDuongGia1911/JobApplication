@@ -29,7 +29,7 @@ const index = () => {
     setRefreshing(true);
 
     Promise.all([
-      load_data_company,
+      load_data_company(),
       load_user_id(),
       load_data_user(),
       load_data_job(),

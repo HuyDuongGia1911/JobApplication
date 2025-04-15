@@ -20,13 +20,19 @@ const CompanyDescription = () => {
     if (companyId) {
       load_company_data(companyId as string);
       load_company_jobs(companyId as string);
-    }
-  }, [companyId]);
 
+    }
+    
+  }, [companyId]);
+  
   const load_company_data = async (id: string) => {
     try {
       const result = await databases.getDocument(databases_id, collection_company_id, id);
+     
+     
       setDataCompany(result);
+      console.log(result);
+
     } catch (error) {
       console.log(error);
     }
@@ -35,7 +41,7 @@ const CompanyDescription = () => {
   const load_company_jobs = async (id: string) => {
     try {
       const result = await databases.listDocuments(databases_id, collection_job_id);
-      const filteredJobs = result.documents.filter((job: any) => job.company.$id === id);
+      const filteredJobs = result.documents.filter((job: any) => job.company?.$id === id);
       setCompanyJobs(filteredJobs);
     } catch (error) {
       console.log(error);

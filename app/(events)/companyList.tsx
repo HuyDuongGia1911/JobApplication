@@ -9,47 +9,125 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { router } from 'expo-router'; // Thêm expo-router để điều hướng
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { Company, Job } from '@/types/type';
+import { getAllDocuments } from "@/lib/appwrite";
+import { databases, databases_id, collection_company_id, collection_job_id } from '@/lib/appwrite';
+import { useEffect } from 'react';
+import { Image } from 'react-native';
 
-const companies = [
-  { id: '1', name: 'Google', jobs: 5, icon: 'google', color: '#4285F4' },
-  { id: '2', name: 'Facebook', jobs: 2, icon: 'facebook', color: '#1877F2' },
-  { id: '3', name: 'Microsoft', jobs: 4, icon: 'microsoft', color: '#F25022' },
-  { id: '4', name: 'Amazon', jobs: 1, icon: 'aws', color: '#FF9900' }, // Thay icon amazon thành aws
-  { id: '5', name: 'Apple', jobs: 3, icon: 'apple', color: '#333333' },
-  { id: '6', name: 'Netflix', jobs: 3, icon: 'netflix', color: '#E50914' },
-  { id: '7', name: 'Samsung', jobs: 4, icon: 'cellphone', color: '#1428A0' },
-  { id: '8', name: 'Tesla', jobs: 2, icon: 'car-electric', color: '#CC0000' },
-  { id: '9', name: 'Adobe', jobs: 3, icon: 'adobe-acrobat-reader', color: '#FF0000' },
-  { id: '10', name: 'LinkedIn', jobs: 2, icon: 'linkedin', color: '#0077B5' },
-  { id: '11', name: 'Spotify', jobs: 4, icon: 'spotify', color: '#1DB954' },
-  { id: '12', name: 'Twitter', jobs: 1, icon: 'twitter', color: '#1DA1F2' },
-];
 
 const { width } = Dimensions.get('window');
 const cardSize = width / 2 - 32;
 
 const companyList = () => {
 
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]); // Sử dụng kiểu dữ liệu Company
+  const [loading, setLoading] = useState(true);
+
+  const fetchCompanyData = async () => {
+    // Lấy dữ liệu từ Appwrite
+    const companiesResult = await getAllDocuments(databases_id, collection_company_id);
+    const jobsResult = await getAllDocuments(databases_id, collection_job_id);
+    if (companiesResult) {
+      // Chuyển đổi Document thành Company
+      const companies: Company[] = companiesResult.map((company: any) => ({
+        $id: company.$id,
+        corp_name: company.corp_name,
+        nation: company.nation,
+        corp_description: company.corp_description,
+        city: company.city,
+        image: company.image,
+        color: company.color,
+      }));
+
+      setCompanies(companies); // Cập nhật state với danh sách công ty
+      console.log(companies); // Kiểm tra dữ liệu công ty
+    }
+    if (jobsResult) {
+      const fetchedJobs: Job[] = jobsResult.map((job: any) => ({
+        $id: job.$id,
+        title: job.title,
+        image: job.image,
+        salary: job.salary,
+        skills_required: job.skills_required,
+        responsibilities: job.responsibilities,
+        created_at: job.created_at,
+        updated_at: job.updated_at,
+        jobTypes: job.jobTypes,
+        jobCategories: job.jobCategories,
+        users: job.users,
+        job_Description: job.job_Description,
+        company: job.company
+      }));
+      setJobs(fetchedJobs); // Lưu công việc vào state
+    }
+  };
+
+
+  useEffect(() => {
+    fetchCompanyData();
+  }, []);
 
   const handleCompanyPress = (companyId: string) => {
-    // Điều hướng đến CompanyDescription với companyId
     router.push({ pathname: '/companyDescription', params: { companyId } });
   };
 
-  const renderItem = ({ item }: { item: typeof companies[0] }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.85}
-      onPress={() => handleCompanyPress(item.id)} 
-    >
-      <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-        <MaterialCommunityIcons name={item.icon as any} size={28} color="#fff" />
-      </View>
-      <Text style={styles.companyName}>{item.name}</Text>
-      <Text style={styles.jobCount}>{item.jobs} jobs</Text>
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }: { item: Company }) => {
+    const jobCount = jobs.filter((job: Job) => job.company?.$id === item.$id).length;
+    
+    // Determine text color based on background color
+    const textColor = item.color ? getContrastColor(item.color) : '#1e293b';
+  
+    return (
+      <TouchableOpacity
+        style={[styles.card, { backgroundColor: item.color || '#e2e8f0' }]}
+        activeOpacity={0.85}
+        onPress={() => handleCompanyPress(item.$id)}
+      >
+        <View style={styles.contentWrapper}>
+          <View style={styles.iconContainer}>
+            {item.image ? (
+              <Image
+                source={{ uri: item.image }}
+                style={styles.companyImage}
+              />
+            ) : (
+              <MaterialCommunityIcons 
+                name="office-building" 
+                size={24} 
+                color={textColor} 
+              />
+            )}
+          </View>
+          <Text style={[styles.companyName, { color: textColor }]}>
+            {item.corp_name || 'Unknown Company'}
+          </Text>
+          <Text style={[styles.jobCount, { color: textColor }]}>
+            {jobCount} {jobCount === 1 ? 'job' : 'jobs'}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  
+  // Helper function to determine contrasting text color
+  const getContrastColor = (hexColor: string) => {
+    // Convert hex to RGB
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Return black or white depending on luminance
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  };
+
+
 
   return (
     <View style={styles.container}>
@@ -64,7 +142,7 @@ const companyList = () => {
       <FlatList
         data={companies}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.$id}
         numColumns={2}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
@@ -102,39 +180,61 @@ const styles = StyleSheet.create({
   list: {
     paddingBottom: 80,
   },
+
+
+
+
+
+
+
+  contentContainer: {
+    backgroundColor: '#ffffff', // Màu nền trắng cho phần nội dung
+    width: '100%',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+  },
+
+
   card: {
     width: cardSize,
-    backgroundColor: '#ffffff',
     borderRadius: 16,
-    paddingVertical: 20,
-    paddingHorizontal: 12,
+    padding: 16, // Tăng padding để màu nền tràn đều
     margin: 8,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
   },
+  contentWrapper: {
+    alignItems: 'center',
+  },
   iconContainer: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)', // Nền trong suốt cho logo
+  },
+  companyImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    resizeMode: 'cover',
   },
   companyName: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#0f172a',
     marginBottom: 4,
     textAlign: 'center',
   },
   jobCount: {
-    fontSize: 13,
-    color: '#64748b',
+    fontSize: 14,
     textAlign: 'center',
   },
 });

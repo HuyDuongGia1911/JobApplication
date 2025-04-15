@@ -68,7 +68,7 @@ const CompanyDescription = () => {
       </View>
       <View style={styles.headerContainer}>
         <View style={styles.jobImageContainer}>
-          <Image style={styles.jobImage} source={{ uri: dataCompany.logo || 'default_image_url' }} />
+          <Image style={styles.jobImage} source={{ uri: dataCompany.image || 'default_image_url' }} />
         </View>
         <View style={styles.companyName}>
           <Text style={styles.companyNameText}>{dataCompany.corp_name}</Text>

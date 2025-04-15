@@ -29,7 +29,7 @@ const index = () => {
     setRefreshing(true);
 
     Promise.all([
-
+      load_data_company,
       load_user_id(),
       load_data_user(),
       load_data_job(),
@@ -119,7 +119,19 @@ const index = () => {
       }
     }).length;
   };
-
+  const getContrastColor = (hexColor: string) => {
+    if (!hexColor) return '#1e293b';
+    
+    // Convert hex to RGB
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  };
   
   return (
     <View style={{ flex: 1, backgroundColor: '#4A80F0' }}>
@@ -164,26 +176,47 @@ const index = () => {
 
           </View>
           <View style={styles.horizontalScrollContainer}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
-            >
-              {dataCompany.map((item: any) => (
-                <TouchableOpacity
-                  key={item.$id}
-                  style={styles.jobCardsContainer}
-                  onPress={() => router.push({ pathname: "/(events)/companyDescription", params: { companyId: item.$id } })}
-                >
-                  <Image style={styles.jobImages} source={{ uri: item.image }} />
-                  <View style={styles.jobCardsDescription}>
-                    <Text style={styles.jobTitle} numberOfLines={2} ellipsizeMode="tail">{item.corp_name}</Text>
-                    <Text style={styles.jobNation}>{item.nation}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
+  >
+    {dataCompany.map((item: any) => {
+      // Xác định màu chữ dựa trên màu nền
+      const textColor = item.color ? getContrastColor(item.color) : '#1e293b';
+      
+      return (
+        <TouchableOpacity
+          key={item.$id}
+          style={[styles.jobCardsContainer, { backgroundColor: item.color || '#e2e8f0' }]}
+          onPress={() => router.push({ 
+            pathname: "/(events)/companyDescription", 
+            params: { companyId: item.$id } 
+          })}
+        >
+          <View style={[styles.imageContainer, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+            <Image 
+              style={styles.jobImages} 
+              source={{ uri: item.image }} 
+            />
           </View>
+          <View style={styles.jobCardsDescription}>
+            <Text 
+              style={[styles.jobTitle, { color: textColor }]} 
+              numberOfLines={2} 
+              ellipsizeMode="tail"
+            >
+              {item.corp_name}
+            </Text>
+            <Text style={[styles.jobNation, { color: textColor }]}>
+              {item.nation}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      );
+    })}
+  </ScrollView>
+</View>
 
               {/* Recommend Jobs Section */}
               <View style={[styles.cardsHeaderContainer, { marginTop: 20 }]}>
@@ -500,5 +533,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
   },
-
+  imageContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
 });

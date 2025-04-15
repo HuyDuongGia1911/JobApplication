@@ -1,221 +1,324 @@
-import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  ActivityIndicator,
-  ScrollView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { databases, databases_id, collection_job_id } from '@/lib/appwrite';
-
-const JobList = () => {
-  const [selectedTab, setSelectedTab] = useState(0);
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+import React, { useEffect, useState } from "react";
+import { ScrollView, Text, TouchableOpacity, View, Image } from "react-native";
+import { useRouter } from "expo-router";
+import { getAllDocuments } from "@/lib/appwrite";
+import { Job, JobCategory, JobType } from "@/types/type";
+import { Ionicons } from "@expo/vector-icons";
+import { databases, databases_id, collection_job_id, collection_jobcategory_id, collection_jobtype_id } from "@/lib/appwrite";
+import { StyleSheet } from "react-native";
+const AllJobs = () => {
   const router = useRouter();
-  const { companyId } = useLocalSearchParams();
+  const [jobs, setJobs] = useState<Job[]>([]); 
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
+  const [categories, setCategories] = useState<JobCategory[]>([]); 
+  const [types, setTypes] = useState<JobType[]>([]); 
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [activeType, setActiveType] = useState<string>("all"); 
 
-  const tabs = ['All', 'Developer', 'Designer', 'HR Manager', 'Entrepreneur'];
+  const fetchData = async () => {
+    const jobsResult = await getAllDocuments(databases_id, collection_job_id);
+    const categoriesResult = await getAllDocuments(databases_id, collection_jobcategory_id);
+    const typesResult = await getAllDocuments(databases_id, collection_jobtype_id);
+    
+    if (jobsResult && categoriesResult && typesResult) {
+      // Chuyển đổi Document thành Job
+      const jobs: Job[] = jobsResult.map((job: any) => ({
+        $id: job.$id,
+        title: job.title,
+        image: job.image,
+        salary: job.salary,
+        skills_required: job.skills_required,
+        responsibilities: job.responsibilities,
+        created_at: job.created_at,
+        updated_at: job.updated_at,
+        jobTypes: job.jobTypes,
+        jobCategories: job.jobCategories,
+        users: job.users,
+        job_Description: job.job_Description,
+        company: job.company
+      }));
 
-  useEffect(() => {
-    fetchCompanyJobs();
-  }, []);
+      const categories: JobCategory[] = categoriesResult.map((category: any) => ({
+        $id: category.$id,
+        category_name: category.category_name,
+        icon_name: category.icon_name,
+        color: category.color,
+      }));
 
-  const fetchCompanyJobs = async () => {
-    try {
-      setLoading(true);
-      const response = await databases.listDocuments(databases_id, collection_job_id);
-      const companyJobs = response.documents.filter(job => job.company?.$id === companyId);
-      setJobs(companyJobs);
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-    } finally {
-      setLoading(false);
+      const types: JobType[] = typesResult.map((type: any) => ({
+        $id: type.$id,
+        type_name: type.type_name,
+      }));
+
+      
+      setJobs(jobs); 
+      setCategories(categories); 
+      setTypes(types); 
+      setFilteredJobs(jobs); 
+      console.log(jobs)
+      console.log(categories)
     }
   };
 
-  const filteredJobs =
-    selectedTab === 0
-      ? jobs
-      : jobs.filter(job => job.jobCategories?.category_name === tabs[selectedTab]);
+  const applyFilters = (categoryId: string, typeId: string) => {
+    let tempJobs = [...jobs];
+  
+    // Vì job.jobCategories là object, không phải array nữa
+    if (categoryId !== "all") {
+      tempJobs = tempJobs.filter((job) =>
+        job.jobCategories?.$id === categoryId
+      );
+    }
+  
+    // Tương tự nếu job.jobTypes là object (không phải array)
+    if (typeId !== "all") {
+      tempJobs = tempJobs.filter((job) =>
+        job.jobTypes?.$id === typeId
+      );
+    }
+  
+    setFilteredJobs(tempJobs);
+  };
+  
+  
 
-  const renderJobItem = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.jobItem}
-      onPress={() => router.push(`/jobDescription?jobId=${item.$id}`)}
-    >
-      <Image source={{ uri: item.image }} style={styles.jobImage} />
-      <View style={styles.jobInfo}>
-        <Text style={styles.jobTitle}>{item.title}</Text>
-        <Text style={styles.jobCompany}>{item.company?.corp_name}</Text>
-        <Text style={styles.jobLocation}>
-          {item.company?.city}, {item.company?.nation}
-        </Text>
-      </View>
-      <View style={styles.jobRight}>
-        <Text style={styles.jobSalary}>${item.salary}</Text>
-        <Text style={styles.jobType}>{item.jobTypes?.type_name}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const handleCategoryChange = (categoryId: string) => {
+    setActiveCategory(categoryId);
+    applyFilters(categoryId, activeType);
+  };
+
+  const handleTypeChange = (typeId: string) => {
+    setActiveType(typeId);
+    applyFilters(activeCategory, typeId);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Jobs in this Company</Text>
-      </View>
-
+    <View style={styles.container}>
+      {/* Tabs lọc theo category */}
       <View style={styles.tabsWrapper}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll}>
-          {tabs.map((tab, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.tabButton, selectedTab === index && styles.tabButtonActive]}
-              onPress={() => setSelectedTab(index)}
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeCategory === "all" && styles.tabButtonActive,
+            ]}
+            onPress={() => handleCategoryChange("all")}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeCategory === "all" && styles.tabTextActive,
+              ]}
             >
-              <Text style={[styles.tabText, selectedTab === index && styles.tabTextActive]}>{tab}</Text>
+              Tất cả danh mục
+            </Text>
+          </TouchableOpacity>
+  
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat.$id}
+              style={[
+                styles.tabButton,
+                activeCategory === cat.$id && styles.tabButtonActive,
+              ]}
+              onPress={() => handleCategoryChange(cat.$id)}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeCategory === cat.$id && styles.tabTextActive,
+                ]}
+              >
+                {cat.category_name}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
+  
+      {/* Tabs lọc theo jobType */}
+      <View style={styles.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll}>
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeType === "all" && styles.tabButtonActive,
+            ]}
+            onPress={() => handleTypeChange("all")}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeType === "all" && styles.tabTextActive,
+              ]}
+            >
+              Tất cả loại công việc
+            </Text>
+          </TouchableOpacity>
+  
+          {types.map((type) => (
+            <TouchableOpacity
+              key={type.$id}
+              style={[
+                styles.tabButton,
+                activeType === type.$id && styles.tabButtonActive,
+              ]}
+              onPress={() => handleTypeChange(type.$id)}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeType === type.$id && styles.tabTextActive,
+                ]}
+              >
+                {type.type_name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+  
+      {/* Danh sách công việc */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
+        {filteredJobs.map((job) => (
+          <TouchableOpacity
+            key={job.$id}
+            onPress={() => router.push({ pathname: '/(events)/jobDescription', params: { jobId: job.$id } })}
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#34C759" />
-        </View>
-      ) : filteredJobs.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="briefcase-outline" size={64} color="#ccc" />
-          <Text style={styles.emptyText}>No jobs found</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredJobs}
-          renderItem={renderJobItem}
-          keyExtractor={item => item.$id}
-          contentContainerStyle={{ padding: 16 }}
-        />
-      )}
-    </SafeAreaView>
+            style={styles.jobItem}
+          >
+            <Image source={{ uri: job.image }} style={styles.jobImage} />
+            <View style={styles.jobInfo}>
+              <Text style={styles.jobTitle}>{job.title}</Text>
+              <Text style={styles.jobCompany}>{job?.company.corp_name}</Text>
+              <Text style={styles.jobLocation}>{job?.company.city}, {job?.company.nation}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+  
+        {filteredJobs.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="sad-outline" size={40} color="gray" />
+            <Text style={styles.emptyText}>Không có công việc phù hợp</Text>
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
-};
-
-export default JobList;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9F9FB',
-  },
-  header: {
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#34C759',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 5,
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  tabsWrapper: {
-    paddingVertical: 10,
-  },
-  tabScroll: {
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  tabButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-  },
-  tabButtonActive: {
-    backgroundColor: '#34C759',
-    borderColor: '#34C759',
-  },
-  tabText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  tabTextActive: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  jobItem: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    alignItems: 'center',
-    elevation: 2,
-  },
-  jobImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  jobInfo: {
-    flex: 1,
-    marginLeft: 10,
-  },
-  jobTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  jobCompany: {
-    fontSize: 14,
-    color: '#666',
-  },
-  jobLocation: {
-    fontSize: 12,
-    color: '#aaa',
-  },
-  jobRight: {
-    alignItems: 'flex-end',
-  },
-  jobSalary: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  jobType: {
-    fontSize: 12,
-    color: '#666',
-    marginVertical: 4,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  emptyText: {
-    fontSize: 18,
-    color: '#666',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-});
+}
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#F9F9FB',
+    },
+    header: {
+      paddingVertical: 24,
+      paddingHorizontal: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#34C759',
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+      elevation: 5,
+    },
+    headerText: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: '#fff',
+    },
+    tabsWrapper: {
+      paddingVertical: 10,
+    },
+    tabScroll: {
+      paddingHorizontal: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    tabButton: {
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderRadius: 20,
+      backgroundColor: '#fff',
+      marginRight: 10,
+      borderWidth: 1,
+      borderColor: '#ccc',
+    },
+    tabButtonActive: {
+      backgroundColor: '#34C759',
+      borderColor: '#34C759',
+    },
+    tabText: {
+      fontSize: 14,
+      color: '#333',
+    },
+    tabTextActive: {
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    jobItem: {
+      flexDirection: 'row',
+      backgroundColor: '#fff',
+      borderRadius: 12,
+      padding: 12,
+      marginBottom: 12,
+      alignItems: 'center',
+      elevation: 2,
+    },
+    jobImage: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+    },
+    jobInfo: {
+      flex: 1,
+      marginLeft: 10,
+    },
+    jobTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#333',
+    },
+    jobCompany: {
+      fontSize: 14,
+      color: '#666',
+    },
+    jobLocation: {
+      fontSize: 12,
+      color: '#aaa',
+    },
+    jobRight: {
+      alignItems: 'flex-end',
+    },
+    jobSalary: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: '#333',
+    },
+    jobType: {
+      fontSize: 12,
+      color: '#666',
+      marginVertical: 4,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    emptyText: {
+      fontSize: 18,
+      color: '#666',
+      marginTop: 16,
+      textAlign: 'center',
+    },
+  });
+export default AllJobs;

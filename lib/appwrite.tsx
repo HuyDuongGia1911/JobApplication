@@ -10,7 +10,17 @@ const client = new Client()
 const databases = new Databases(client);
 
 export const account = new Account(client);
-
+export async function getAllDocuments(databaseId: string, collectionId: string) {
+    try {
+      const response = await databases.listDocuments(databaseId, collectionId, [
+        Query.orderDesc("$createdAt")
+      ]);
+      return response.documents;
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+      return [];
+    }
+  }
 
 const databases_id = '67e8c482002b317d5244'
 const collection_job_id = '67e8c50d003e2f3390e9'

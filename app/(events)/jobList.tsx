@@ -63,14 +63,14 @@ const AllJobs = () => {
   const applyFilters = (categoryId: string, typeId: string) => {
     let tempJobs = [...jobs];
   
-    // Vì job.jobCategories là object, không phải array nữa
+   
     if (categoryId !== "all") {
       tempJobs = tempJobs.filter((job) =>
         job.jobCategories?.$id === categoryId
       );
     }
   
-    // Tương tự nếu job.jobTypes là object (không phải array)
+   
     if (typeId !== "all") {
       tempJobs = tempJobs.filter((job) =>
         job.jobTypes?.$id === typeId

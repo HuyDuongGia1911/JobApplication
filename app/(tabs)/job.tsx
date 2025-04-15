@@ -13,47 +13,79 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSavedJobs } from '@/app/saveJobsContext';
-import { databases, databases_id, collection_job_id } from '@/lib/appwrite';
+import { databases, databases_id, collection_job_id, collection_saved_jobs, collection_jobcategory_id, Query } from '@/lib/appwrite';
+import { account } from '@/lib/appwrite';
 
 const Job = () => {
   const [selectedTab, setSelectedTab] = useState(0);
-  const { savedJobs, toggleSaveJob } = useSavedJobs();
+  const [savedJobs, setSavedJobs] = useState<any[]>([])
   const [allJobs, setAllJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [userId, setUserId] = useState<string>('')
   const tabs = ['All', 'Developer', 'Designer', 'HR Manager', 'Entrepreneur'];
+  const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
-
-  const fetchJobs = async () => {
+    if (userId) {
+      fetchSavedJobs()
+      fetchCategories();
+    }
+  }, [userId])
+  useEffect(() => {
+    
+    loadUser()
+  }, [])
+  const loadUser = async () => {
     try {
-      setLoading(true);
-      // Fetch all jobs from your database
-      const response = await databases.listDocuments(
-        databases_id,
-        collection_job_id
-      );
-      setAllJobs(response.documents);
+      const user = await account.get()
+      setUserId(user.$id)
     } catch (error) {
-      console.error('Error fetching jobs:', error);
+      console.log('Không lấy được user:', error)
+    }
+  }
+
+  const fetchSavedJobs = async () => {
+    try {
+      setLoading(true)
+      const saved = await databases.listDocuments(
+        databases_id,
+        collection_saved_jobs,
+        [Query.equal('userId', userId)]
+      )
+
+      const jobIds = saved.documents.map(doc => doc.jobId)
+      const jobPromises = jobIds.map((jobId: string) =>
+        databases.getDocument(databases_id, collection_job_id, jobId)
+      )
+
+      const jobDetails = await Promise.all(jobPromises)
+      setSavedJobs(jobDetails)
+    } catch (error) {
+      console.log('Lỗi khi load saved jobs:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
+    }
+  }
+  const fetchCategories = async () => {
+    try {
+      const response = await databases.listDocuments(databases_id, collection_jobcategory_id);
+      setCategories(response.documents);
+    } catch (err) {
+      console.error('Lỗi khi load category:', err);
     }
   };
 
   // Get saved jobs
-  const savedJobsList = allJobs.filter(job => savedJobs.includes(job.$id));
+  const savedJobsList = savedJobs;
+
 
   // Filter jobs based on selected tab
   const filteredJobs =
-    selectedTab === 0
-      ? savedJobsList
-      : savedJobsList.filter((job) => {
-          // Adjust this filter based on your job categories structure
-          return job.jobCategories?.category_name === tabs[selectedTab];
-        });
+  selectedTab === 0
+    ? savedJobsList
+    : savedJobsList.filter((job) =>
+        job.jobCategories?.$id === categories[selectedTab - 1]?.$id
+      );
 
   const renderJobItem = ({ item }: { item: any }) => {
     const isSaved = savedJobs.includes(item.$id);
@@ -72,20 +104,61 @@ const Job = () => {
         <View style={styles.jobRight}>
           <Text style={styles.jobSalary}>$ {item.salary}</Text>
           <Text style={styles.jobType}>{item.jobTypes?.type_name}</Text>
-          <TouchableOpacity
-            onPress={() => toggleSaveJob(item.$id)}
-            style={{ padding: 4 }}
-          >
-            <Ionicons
-              name={isSaved ? 'heart' : 'heart-outline'}
-              size={24}
-              color={isSaved ? '#FF3B30' : '#999'}
-            />
-          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleSaveJob(item.$id)} style={{ padding: 4 }}>
+  <Ionicons
+    name={savedJobs.some(job => job.$id === item.$id) ? 'heart' : 'heart-outline'}
+    size={24}
+    color={savedJobs.some(job => job.$id === item.$id) ? '#FF3B30' : '#999'}
+  />
+</TouchableOpacity>
+
         </View>
       </TouchableOpacity>
     );
   };
+  const handleSaveJob = async (jobId: string) => {
+    if (!userId) return;
+  
+    const isJobSaved = savedJobs.some(job => job.$id === jobId);
+  
+    try {
+      if (isJobSaved) {
+   
+        const savedJobDoc = await databases.listDocuments(
+          databases_id,
+          collection_saved_jobs,
+          [
+            Query.equal('userId', userId),
+            Query.equal('jobId', jobId)
+          ]
+        );
+  
+        if (savedJobDoc.documents.length > 0) {
+          await databases.deleteDocument(
+            databases_id,
+            collection_saved_jobs,
+            savedJobDoc.documents[0].$id
+          );
+        }
+      } else {
+        // Lưu job vào saved list
+        await databases.createDocument(
+          databases_id,
+          collection_saved_jobs,
+          'unique()', 
+          {
+            userId,
+            jobId
+          }
+        );
+      }
+  
+      fetchSavedJobs(); 
+    } catch (err) {
+      console.error('Lỗi xử lý trái tim:', err);
+    }
+  };
+  
 
   return (
     <SafeAreaView style={styles.container}>
@@ -102,32 +175,34 @@ const Job = () => {
       </View>
 
       <View style={styles.tabsWrapper}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabScroll}
-        >
-          {tabs.map((tab, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.tabButton,
-                selectedTab === index && styles.tabButtonActive,
-              ]}
-              onPress={() => setSelectedTab(index)}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  selectedTab === index && styles.tabTextActive,
-                ]}
-              >
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.tabScroll}
+  >
+    <TouchableOpacity
+      style={[styles.tabButton, selectedTab === 0 && styles.tabButtonActive]}
+      onPress={() => setSelectedTab(0)}
+    >
+      <Text style={[styles.tabText, selectedTab === 0 && styles.tabTextActive]}>
+        All
+      </Text>
+    </TouchableOpacity>
+
+    {categories.map((cat, index) => (
+      <TouchableOpacity
+        key={cat.$id}
+        style={[styles.tabButton, selectedTab === index + 1 && styles.tabButtonActive]}
+        onPress={() => setSelectedTab(index + 1)}
+      >
+        <Text style={[styles.tabText, selectedTab === index + 1 && styles.tabTextActive]}>
+          {cat.category_name}
+        </Text>
+      </TouchableOpacity>
+    ))}
+  </ScrollView>
+</View>
+
 
       {loading ? (
         <View style={styles.loadingContainer}>

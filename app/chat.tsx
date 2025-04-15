@@ -28,7 +28,7 @@ const Chat = () => {
 
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<MessageType[]>([
-    { id: '1', text: 'Chào! tao  là nhà tuyển dụng!', role: 'Recruiter' },
+    { id: '1', text: 'Chào! tôi là nhà tuyển dụng!', role: 'Recruiter' },
   ]);
 
   const flatListRef = useRef<FlatList>(null);

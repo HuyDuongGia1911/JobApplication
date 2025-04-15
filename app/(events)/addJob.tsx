@@ -1,11 +1,18 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+} from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { databases, ID } from '@/lib/appwrite';
-import jobDescription from './jobDescription';
-import { account } from '@/lib/appwrite';
+import { databases, ID, account } from '@/lib/appwrite';
 
 type JobOption = {
     label: string;
@@ -125,14 +132,15 @@ type JobOption = {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
-      <TextInput  placeholder="Tiêu đề công việc" value={title} onChangeText={setTitle} />
-      <TextInput  placeholder="Giới thiệu công việc" value={jobDescription} onChangeText={setjobDescription} />
-      <TextInput  placeholder="Kỹ năng cần thiết" value={skillsRequired} onChangeText={setSkillsRequired} />
-      <TextInput  placeholder="Trách nhiệm" value={responsibilities} onChangeText={setResponsibilities} />
-      <TextInput  placeholder="Mức lương" value={salary} onChangeText={setSalary} keyboardType="numeric" />
-      <TextInput  placeholder="Link ảnh công việc" value={image} onChangeText={setImage} />
-      <Text style={{ marginTop: 12 }}>Loại công việc</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <TextInput style={styles.input} placeholder="Tiêu đề công việc" value={title} onChangeText={setTitle} />
+      <TextInput style={styles.input} placeholder="Giới thiệu công việc" value={jobDescription} onChangeText={setjobDescription} />
+      <TextInput style={styles.input} placeholder="Kỹ năng cần thiết" value={skillsRequired} onChangeText={setSkillsRequired} />
+      <TextInput style={styles.input} placeholder="Trách nhiệm" value={responsibilities} onChangeText={setResponsibilities} />
+      <TextInput style={styles.input} placeholder="Mức lương" value={salary} onChangeText={setSalary} keyboardType="numeric" />
+      <TextInput style={styles.input} placeholder="Link ảnh công việc" value={image} onChangeText={setImage} />
+
+      <Text style={styles.sectionTitle}>Loại công việc</Text>
       <DropDownPicker
         open={openJobType}
         value={selectedJobType}
@@ -141,10 +149,10 @@ type JobOption = {
         setValue={setSelectedJobType}
         setItems={setJobTypeItems}
         placeholder="Chọn loại công việc"
-        style={{ marginBottom: openJobType ? 100 : 16 }}
+        style={{ marginBottom: openJobType ? 100 : 12 }}
       />
 
-      <Text>Danh mục công việc</Text>
+      <Text style={styles.sectionTitle}>Danh mục công việc</Text>
       <DropDownPicker
         open={openJobCategory}
         value={selectedJobCategory}
@@ -153,26 +161,26 @@ type JobOption = {
         setValue={setSelectedJobCategory}
         setItems={setJobCategoryItems}
         placeholder="Chọn danh mục"
-        style={{ marginBottom: openJobCategory ? 100 : 16 }}
+        style={{ marginBottom: openJobCategory ? 100 : 12 }}
       />
 
       <TouchableOpacity onPress={() => setIsAddingNewCompany(!isAddingNewCompany)}>
-        <Text style={{ color: 'blue', marginBottom: 8 }}>
+        <Text style={styles.linkText}>
           {isAddingNewCompany ? '← Chọn công ty có sẵn' : '+ Thêm công ty mới'}
         </Text>
       </TouchableOpacity>
 
       {isAddingNewCompany ? (
         <>
-          <TextInput placeholder="Tên công ty" value={newCompany.corp_name} onChangeText={text => setNewCompany({ ...newCompany, corp_name: text })} />
-          <TextInput placeholder="Quốc gia" value={newCompany.nation} onChangeText={text => setNewCompany({ ...newCompany, nation: text })} />
-          <TextInput placeholder="Mô tả" value={newCompany.corp_description} onChangeText={text => setNewCompany({ ...newCompany, corp_description: text })} />
-          <TextInput  placeholder="Thành phố" value={newCompany.city} onChangeText={text => setNewCompany({ ...newCompany, city: text })} />
-          <TextInput  placeholder="Link ảnh công ty" value={newCompany.image} onChangeText={text => setNewCompany({ ...newCompany, image: text })} />
+          <TextInput style={styles.input} placeholder="Tên công ty" value={newCompany.corp_name} onChangeText={text => setNewCompany({ ...newCompany, corp_name: text })} />
+          <TextInput style={styles.input} placeholder="Quốc gia" value={newCompany.nation} onChangeText={text => setNewCompany({ ...newCompany, nation: text })} />
+          <TextInput style={styles.input} placeholder="Mô tả" value={newCompany.corp_description} onChangeText={text => setNewCompany({ ...newCompany, corp_description: text })} />
+          <TextInput style={styles.input} placeholder="Thành phố" value={newCompany.city} onChangeText={text => setNewCompany({ ...newCompany, city: text })} />
+          <TextInput style={styles.input} placeholder="Link ảnh công ty" value={newCompany.image} onChangeText={text => setNewCompany({ ...newCompany, image: text })} />
         </>
       ) : (
         <>
-          <Text>Công ty</Text>
+          <Text style={styles.sectionTitle}>Công ty</Text>
           <DropDownPicker
             open={openCompany}
             value={selectedCompany}
@@ -181,20 +189,64 @@ type JobOption = {
             setValue={setSelectedCompany}
             setItems={setCompanyItems}
             placeholder="Chọn công ty"
-            style={{ marginBottom: openCompany ? 100 : 16 }}
+            style={{ marginBottom: openCompany ? 100 : 12 }}
           />
         </>
       )}
 
-      <TouchableOpacity  onPress={handleAddJob} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : (
+      <TouchableOpacity style={styles.button} onPress={handleAddJob} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
           <>
-            <Ionicons name="add-circle-outline" size={18} color="#fff" />
-            <Text>Thêm công việc</Text>
+            <Ionicons name="add-circle-outline" size={20} color="#fff" />
+            <Text style={styles.buttonText}>Thêm công việc</Text>
           </>
         )}
       </TouchableOpacity>
     </ScrollView>
   );
-}
+};
+
 export default AddJob
+const styles = StyleSheet.create({
+  container : {
+    padding: 16,
+    backgroundColor: '#fff',
+  },
+  input :{
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
+    fontSize:16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    marginTop: 12,
+
+  },
+  linkText: {
+  color: '#007AFF',
+  marginBottom: 18,
+  fontSize: 16,
+  },
+  button: {
+    marginTop: 20,
+    backgroundColor: '#4CAF50',
+    padding: 12,
+    borderRadius: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText:{
+    color: '#fff',
+    fontWeight: 'bold',
+    marginLeft: 8,
+    fontSize: 16,
+  },
+});

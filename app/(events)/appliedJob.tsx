@@ -7,43 +7,57 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import { useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useRouter } from 'expo-router';
-
+import { collection_applied_jobs_id, collection_user_id, collection_job_id,account, databases, databases_id, Query} from '@/lib/appwrite';
 const appliedJob = () => {
   // Danh sách job đã apply
-  const [appliedJobs, setappliedJobs] = useState([
-    {
-      id: '1',
-      title: 'Developer',
-      company: 'Sponce',
-      salary: '$ 4370 / Year',
-      location: 'Vietnam',
-      type: 'Full-time',
-      image: 'https://via.placeholder.com/50x50.png?text=Dev',
-      status: 'Đang chờ duyệt',
-    },
-    {
-      id: '2',
-      title: 'Designer',
-      company: 'Google',
-      salary: '$ 770 / Year',
-      location: 'Sofia',
-      type: 'Full-time',
-      image: 'https://via.placeholder.com/50x50.png?text=Des',
-      status: 'Đã duyệt',
-    },
-  ]);
+  const router = useRouter();
+  const [appliedJobs, setAppliedJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string>('')
+  const fetchAppliedJobs = async () => {
+    try {
+      setLoading(true);
+      const res = await databases.listDocuments(
+        databases_id,
+        collection_applied_jobs_id,
+        [Query.equal('userId', userId || '')]
+      );
 
-  const renderJobItem = ({ item }: { item: any }) => {
+      const jobs = await Promise.all(
+        res.documents.map(async (doc) => {
+          const jobRes = await databases.getDocument(
+            databases_id,
+            collection_job_id,
+            doc.jobId,
+          );
+          return {
+            ...jobRes,
+            status: doc.status,
+            applied_at: doc.applied_at,
+          };
+        })
+      );
+
+      setAppliedJobs(jobs);
+    } catch (err) {
+      console.error('Failed to fetch applied jobs:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const renderItem = ({ item }: { item: any }) => {
     return (
-      <View style={styles.jobItem}>
+      console.log(item),
+      <TouchableOpacity style={styles.jobItem} onPress={() => router.push({ pathname: '/(events)/jobDescription', params: { jobId: item.$id } })}>
         <Image source={{ uri: item.image }} style={styles.jobImage} />
         <View style={styles.jobInfo}>
           <Text style={styles.jobTitle}>{item.title}</Text>
-          <Text style={styles.jobCompany}>{item.company}</Text>
-          <Text style={styles.jobLocation}>{item.location}</Text>
+          <Text style={styles.jobCompany}>{item.company?.corp_name}</Text>  
+          <Text style={styles.jobLocation}>{item.company?.location}</Text>
           <Text style={styles.jobStatus}>
             Trạng thái: 
             <Text style={{ fontWeight: 'bold', color: item.status === 'Đã duyệt' ? '#34C759' : '#FF9500' }} >
@@ -52,14 +66,25 @@ const appliedJob = () => {
           </Text>
         </View>
         <View style={styles.jobRight}>
-          <Text style={styles.jobSalary}>{item.salary}</Text>
+          <Text style={styles.jobSalary}>{item.salary} $</Text>
           <Text style={styles.jobType}>{item.type}</Text>
           <Ionicons name="checkmark-done" size={24} color="#34C759" />
         </View>
-      </View>
+      
+      </TouchableOpacity>
     );
   };
-
+  const load_userId = async () => {
+      const user = await account.get()
+      setUserId(user.$id)
+    }
+    useEffect(() => {
+      if (userId) fetchAppliedJobs();
+    }, [userId]);
+    useEffect(() => {
+      load_userId();
+    }, []);
+    
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -78,12 +103,16 @@ const appliedJob = () => {
         />
       </View>
 
-      <FlatList
-        data={appliedJobs}
-        renderItem={renderJobItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-      />
+      {loading ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+          data={appliedJobs}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.$id.toString()} // Assuming $id is unique
+          contentContainerStyle={{ paddingHorizontal: 16 }}
+        />
+      )}
     </SafeAreaView>
   );
 };

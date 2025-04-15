@@ -28,6 +28,8 @@ const collection_user_id = '67eb6f55003bab0d48d7'
 const collection_jobtype_id = '67eb67ac002af299cf8b';
 const collection_jobcategory_id = '67eb6bfc00221765d9e4';
 const collection_company_id ='67f61f400009809453a2';
-const collection_saved_jobs = '67fba800002508632ee5';
-export { client, databases, databases_id, collection_job_id, collection_user_id,collection_jobtype_id, collection_jobcategory_id, collection_company_id, collection_saved_jobs, Query }
+const collection_saved_jobs_id = '67fba800002508632ee5';
+const collection_applied_jobs_id= '67fe804c003af89aa92c';
+
+export { client, databases, databases_id, collection_job_id, collection_user_id,collection_jobtype_id, collection_jobcategory_id, collection_company_id, collection_saved_jobs_id, collection_applied_jobs_id, Query }
 export { ID };

@@ -2,9 +2,10 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import React, { useEffect, useState } from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { account, databases, databases_id, collection_saved_jobs, ID, Query, collection_job_id, collection_user_id } from '@/lib/appwrite'
+import { account, databases, databases_id, collection_saved_jobs_id, ID, Query, collection_job_id, collection_user_id, collection_applied_jobs_id } from '@/lib/appwrite'
 import { Image } from 'react-native'
 import { router } from 'expo-router'
+import { Job } from '@/types/type'
 const jobDescription = () => {
   const [selected, setSelected] = useState(0);
 
@@ -19,6 +20,9 @@ const jobDescription = () => {
   const [jobIdOfUser, setJobIdOfUser] = useState<string>('')
   const [dataJob, setDataJob] = useState<any>(null);
   const [posterInfo, setPosterInfo] = useState<{ name?: string, email?: string }>({});
+  const [isApplied, setIsApplied] = useState(false);
+  const [applyDocId, setApplyDocId] = useState<string | null>(null);
+ 
   useEffect(() => {
     load_userId()
     load_data_save_jobs()
@@ -34,7 +38,7 @@ const jobDescription = () => {
         setLoadding(true)
         const dataSaveJobs = await databases.listDocuments(
           databases_id,
-          collection_saved_jobs,
+          collection_saved_jobs_id,
           [Query.equal('userId', userId), Query.equal('jobId', jobId)]
         )
 
@@ -96,7 +100,7 @@ const jobDescription = () => {
         setLoadding(true)
         await databases.createDocument(
           databases_id,
-          collection_saved_jobs,
+          collection_saved_jobs_id,
           ID.unique(),
           {
             userId: userId,
@@ -116,7 +120,7 @@ const jobDescription = () => {
         setLoadding(true)
         await databases.deleteDocument(
           databases_id,
-          collection_saved_jobs,
+          collection_saved_jobs_id,
           jobIdOfUser
         )
         await load_data_save_jobs()
@@ -126,7 +130,81 @@ const jobDescription = () => {
       setLoadding(false)
     }
   }
-
+  const checkIfApplied = async () => {
+    try {
+      const res = await databases.listDocuments(databases_id, collection_applied_jobs_id, [
+        Query.equal('userId', userId || ''),
+        Query.equal('jobId', jobId),
+      ]);
+      if (res.documents.length > 0) {
+        setIsApplied(true);
+        setApplyDocId(res.documents[0].$id);
+      } else {
+        setIsApplied(false);
+        setApplyDocId(null);
+      }
+    } catch (err) {
+      console.error('Check applied error:', err);
+    }
+  };
+  useEffect(() => {
+    if (userId && jobId) {
+      checkIfApplied();
+    }
+  }, [userId, jobId]);
+  const handleApply = async () => {
+    try {
+      await databases.createDocument(databases_id, collection_applied_jobs_id, ID.unique(), {
+        userId: userId,
+        jobId: jobId,
+        status: 'pending',
+        applied_at: new Date().toISOString(),
+      });
+      setIsApplied(true);
+      await checkIfApplied(); 
+     
+     
+     
+    } catch (err) {
+      console.error('Apply failed:', err);
+    }
+  };
+  
+  const handleCancelApply = async () => {
+    if (!applyDocId) {
+      console.log("No application found to cancel");
+      return;
+    }
+    
+    try {
+      setLoadding(true); // show loading state
+      await databases.deleteDocument(databases_id, collection_applied_jobs_id, applyDocId);
+      console.log('Application cancelled successfully');
+      
+      
+      setIsApplied(false);
+      setApplyDocId(null);
+     
+     
+    } catch (err) {
+      console.error('Cancel failed:', err);
+    } finally {
+      setLoadding(false); // hide loading state
+    }
+  };
+  const reloadJobDetails = async () => {
+    try {
+      const jobDetails = await databases.getDocument(
+        databases_id,
+        collection_job_id,
+        jobId
+      );
+      setDataJob(jobDetails); 
+    } catch (error) {
+      console.error('Failed to reload job details:', error);
+    }
+  };
+  
   if (loadding || !dataJob) {
     return (
       <View style={[styles.container, {justifyContent: 'center', alignItems: 'center'}]}>
@@ -228,11 +306,21 @@ const jobDescription = () => {
   </TouchableOpacity>
 )
 }
-<TouchableOpacity style={styles.applyContainer} onPress={() => router.push({ pathname: '/(events)/submit', params: { jobId } })} >
-
-<Text style={styles.applyText}>Apply Now</Text>
-
-</TouchableOpacity>
+{isApplied ? (
+  <TouchableOpacity
+    style={styles.applyContainer}
+    onPress={handleCancelApply}
+  >
+    <Text style={styles.applyText}>Cancel Apply</Text>
+  </TouchableOpacity>
+) : (
+  <TouchableOpacity
+    style={styles.applyContainer}
+    onPress={handleApply}
+  >
+    <Text style={styles.applyText}>Apply Now</Text>
+  </TouchableOpacity>
+)}
       </View>
     </View>
   )

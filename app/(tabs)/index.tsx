@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { account, collection_company_id, collection_job_id, collection_user_id, collection_jobcategory_id, databases, databases_id } from '@/lib/appwrite';
 
 const index = () => {
-  const [selected, setSelected] = useState(0);
+
   const [userId, setUserId] = useState<string>('');
   const [dataJob, setDataJob] = useState<any>([]);
   const [dataUser, setDataUser] = useState<any>();
@@ -38,9 +38,7 @@ const index = () => {
     });
   }, []);
 
-  const Switch_Selected = async (index: number) => {
-    setSelected(index);
-  };
+ 
 
   const load_user_id = async () => {
     try {
@@ -109,7 +107,7 @@ const index = () => {
 
   const getJobCountByCategory = (categoryId: string) => {
     return dataJob.filter((job: any) => {
-      // job.jobCategories là 1 object hoặc array object
+    
       if (!job.jobCategories) return false;
 
       if (Array.isArray(job.jobCategories)) {
@@ -122,12 +120,12 @@ const index = () => {
   const getContrastColor = (hexColor: string) => {
     if (!hexColor) return '#1e293b';
     
-    // Convert hex to RGB
+   
     const r = parseInt(hexColor.slice(1, 3), 16);
     const g = parseInt(hexColor.slice(3, 5), 16);
     const b = parseInt(hexColor.slice(5, 7), 16);
     
-    // Calculate luminance
+  
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     
     return luminance > 0.5 ? '#000000' : '#FFFFFF';

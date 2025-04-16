@@ -13,16 +13,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSavedJobs } from '@/app/saveJobsContext';
-import { databases, databases_id, collection_job_id, collection_saved_jobs, collection_jobcategory_id, Query } from '@/lib/appwrite';
+import { databases, databases_id, collection_job_id, collection_saved_jobs_id, collection_jobcategory_id, Query } from '@/lib/appwrite';
 import { account } from '@/lib/appwrite';
 
 const Job = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [savedJobs, setSavedJobs] = useState<any[]>([])
-  const [allJobs, setAllJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string>('')
-  const tabs = ['All', 'Developer', 'Designer', 'HR Manager', 'Entrepreneur'];
   const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
@@ -49,7 +47,7 @@ const Job = () => {
       setLoading(true)
       const saved = await databases.listDocuments(
         databases_id,
-        collection_saved_jobs,
+        collection_saved_jobs_id,
         [Query.equal('userId', userId)]
       )
 
@@ -126,7 +124,7 @@ const Job = () => {
    
         const savedJobDoc = await databases.listDocuments(
           databases_id,
-          collection_saved_jobs,
+          collection_saved_jobs_id,
           [
             Query.equal('userId', userId),
             Query.equal('jobId', jobId)
@@ -136,7 +134,7 @@ const Job = () => {
         if (savedJobDoc.documents.length > 0) {
           await databases.deleteDocument(
             databases_id,
-            collection_saved_jobs,
+            collection_saved_jobs_id,
             savedJobDoc.documents[0].$id
           );
         }
@@ -144,7 +142,7 @@ const Job = () => {
         // Lưu job vào saved list
         await databases.createDocument(
           databases_id,
-          collection_saved_jobs,
+          collection_saved_jobs_id,
           'unique()', 
           {
             userId,

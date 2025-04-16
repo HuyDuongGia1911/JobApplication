@@ -48,11 +48,11 @@ const Person = () => {
           userId,
           { email: email }
         );
-        
+
       }
 
       if (editField === 'name') {
-        
+
         await databases.updateDocument(
           databases_id,
           collection_user_id,
@@ -105,14 +105,14 @@ const Person = () => {
     }
   };
 
-  
 
-   
+
+
   useEffect(() => {
     const getAuthUser = async () => {
       try {
         const user = await account.get();
-        console.log("(NOBRIDGE) LOG USER NAME:", user.name);
+       
         setUserName(user.name);
       } catch (error) {
         console.error("Không lấy được thông tin user:", error);
@@ -191,23 +191,34 @@ const Person = () => {
             <Ionicons name="checkmark-done" size={18} color="#fff" />
           </TouchableOpacity>
           {dataUser?.isRecruiter && (
-            <TouchableOpacity
-              style={{
-                backgroundColor: '#4A90E2',
-                padding: 12,
-                borderRadius: 10,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
+            <View>
+              <TouchableOpacity
+                style={
+                  styles.appliedJobsButton
+
+                }
+                onPress={() => router.push('/(events)/addJob')}
+              >
                 
-              }}
-              onPress={() => router.push('/(events)/addJob')}
-            >
-              <Ionicons name="add-circle-outline" size={20} color="#fff" />
-              <Text style={{ color: '#fff', fontWeight: '600', marginLeft: 8 }}>
-                Thêm công việc
-              </Text>
-            </TouchableOpacity>
+                <Text style={{ color: '#fff', fontWeight: '600', marginLeft: 8 }}>
+                  Thêm công việc
+                </Text>
+                <Ionicons name="add-circle-outline" size={20} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={
+                  styles.appliedJobsButton
+
+                }
+                onPress={() => router.push('/(events)/appliedList')}
+              >
+               
+                <Text style={{ color: '#fff', fontWeight: '600', marginLeft: 8 }}>
+                  Đơn ứng tuyển
+                </Text>
+                <Ionicons name='receipt-outline' size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
           )}
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>
@@ -392,6 +403,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     gap: 8,
+    marginBottom: 15,
   },
   logoutButton: {
     flexDirection: 'row',

@@ -21,6 +21,45 @@ export async function getAllDocuments(databaseId: string, collectionId: string) 
       return [];
     }
   }
+  export const getAppliedJobs = async (recruiterId: string) => {
+    try {
+      // Lấy tất cả job do recruiter đăng
+      const jobsRes = await databases.listDocuments(databases_id, collection_job_id, [
+        Query.equal('users', recruiterId),
+      ]);
+  
+      const jobIds = jobsRes.documents.map((job) => job.$id);
+  
+      // Lấy tất cả application liên quan tới các job đó
+      const applicationsRes = await databases.listDocuments(databases_id, collection_applied_jobs_id, [
+        Query.equal('jobId', jobIds),
+      ]);
+  
+      // Lấy thông tin user & job để hiển thị đẹp
+      const results = await Promise.all(
+        applicationsRes.documents.map(async (app) => {
+          const job = jobsRes.documents.find((j) => j.$id === app.jobId);
+          const userRes = await databases.getDocument(databases_id, collection_user_id, app.userId);
+          return { ...app, job, user: userRes };
+        })
+      );
+  
+      return results;
+    } catch (error) {
+      console.error('Lỗi khi lấy applied jobs:', error);
+      return [];
+    }
+  };
+  
+  export const updateApplicationStatus = async (applicationId: string, status: string) => {
+    try {
+      await databases.updateDocument(databases_id, collection_applied_jobs_id, applicationId, {
+        status,
+      });
+    } catch (error) {
+      console.error('Lỗi cập nhật status:', error);
+    }
+  };
 
 const databases_id = '67e8c482002b317d5244'
 const collection_job_id = '67e8c50d003e2f3390e9'

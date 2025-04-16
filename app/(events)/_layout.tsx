@@ -41,7 +41,12 @@ const Layout = () => {
         options={{
           headerShown: false,
         }}
-        
+      />
+      <Stack.Screen
+        name="appliedList"
+        options={{
+          headerShown: false,
+        }}
       />
     </Stack>
   );

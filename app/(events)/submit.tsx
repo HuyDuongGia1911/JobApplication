@@ -7,14 +7,19 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
-
+import { storage, databases, databases_id, collection_applied_jobs_id, ID } from '@/lib/appwrite';
 const Submit = () => {
+  const { jobId, userId, applyDocId } = useLocalSearchParams<{
+    jobId: string;
+    userId: string;
+    applyDocId: string;
+  }>();
   // Lưu file CV đã chọn: uri & name
   const [cvFile, setCvFile] = useState<{ uri: string; name: string } | null>(null);
-
+  const [uploading, setUploading] = useState(false);
   const [portfolioLink, setPortfolioLink] = useState<string>('');
   const [portfolioSlides, setPortfolioSlides] = useState<string[]>([]);
   const [portfolioPdfs, setPortfolioPdfs] = useState<string[]>([]);
@@ -98,7 +103,54 @@ const Submit = () => {
     Alert.alert('✅ Nộp đơn thành công!');
     router.push('/(events)/submit');
   };
+const uploadToAppwrite = async () => {
+    if (!cvFile || !jobId || !userId || !applyDocId) {
+      Alert.alert('Lỗi', 'Vui lòng chọn CV và đảm bảo thông tin công việc hợp lệ');
+      return;
+    }
 
+    try {
+      setUploading(true);
+      // Lấy thông tin file để lấy kích thước
+      const fileInfo = await FileSystem.getInfoAsync(cvFile.uri);
+      if (!fileInfo.exists) {
+        throw new Error('File không tồn tại');
+      }
+      // Tạo file trong Appwrite Storage
+      const file = await storage.createFile(
+        '681f22880030984d2260', // Thay bằng bucketId 
+        ID.unique(),
+        {
+          name: cvFile.name,
+          uri: cvFile.uri,
+          type: cvFile.name.endsWith('.pdf') ? 'application/pdf' : 'application/msword',
+          size: fileInfo.size,
+        }
+      );
+
+      // Lấy URL của file (nếu cần)
+      const fileUrl = `https://cloud.appwrite.io/v1/storage/buckets/cv_uploads_123/files/${file.$id}/view?project=<YOUR_PROJECT_ID>`;
+      
+      // Cập nhật document trong collection_applied_jobs_id với URL CV
+      await databases.updateDocument(
+        databases_id,
+        collection_applied_jobs_id,
+        applyDocId,
+        {
+          cv_url: fileUrl,
+          updated_at: new Date().toISOString(),
+        }
+      );
+
+      Alert.alert('Thành công', 'CV đã được tải lên và đơn ứng tuyển đã được cập nhật!');
+      router.push('/'); // Chuyển về trang chính hoặc trang khác
+    } catch (error) {
+      console.error('❌ Upload failed:', error);
+      Alert.alert('Lỗi', 'Không thể tải CV lên, vui lòng thử lại');
+    } finally {
+      setUploading(false);
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={styles.topView}>
@@ -117,8 +169,14 @@ const Submit = () => {
             {cvFile ? cvFile.name : 'Tải file Doc/Docx/PDF'}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-          <Text style={styles.applyButtonText}>Nộp đơn</Text>
+        <TouchableOpacity
+          style={[styles.applyButton, uploading && styles.disabledButton]}
+          onPress={uploadToAppwrite}
+          disabled={uploading}
+        >
+          <Text style={styles.applyButtonText}>
+            {uploading ? 'Đang tải lên...' : 'Nộp đơn'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -244,5 +302,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'white',
     fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
   },
 });

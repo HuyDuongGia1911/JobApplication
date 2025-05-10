@@ -13,6 +13,7 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { databases, ID, account } from '@/lib/appwrite';
+import { databases_id } from '@/lib/appwrite';
 
 type JobOption = {
     label: string;
@@ -46,6 +47,7 @@ type JobOption = {
     corp_description: '',
     city: '',
     image: '',
+    color: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -53,9 +55,9 @@ type JobOption = {
   const fetchOptions = async () => {
     try {
       const [types, categories, companies] = await Promise.all([
-        databases.listDocuments('67e8c482002b317d5244', '67eb67ac002af299cf8b'),
-        databases.listDocuments('67e8c482002b317d5244', '67eb6bfc00221765d9e4'),
-        databases.listDocuments('67e8c482002b317d5244', '67f61f400009809453a2'),
+        databases.listDocuments(databases_id , '67eb67ac002af299cf8b'),
+        databases.listDocuments(databases_id , '67eb6bfc00221765d9e4'),
+        databases.listDocuments(databases_id , '67f61f400009809453a2'),
       ]);
 
       setJobTypeItems(types.documents.map(d => ({ label: d.type_name, value: d.$id })));
@@ -94,7 +96,7 @@ type JobOption = {
 
       if (isAddingNewCompany) {
         const newComp = await databases.createDocument(
-          '67e8c482002b317d5244',
+          databases_id ,
           '67f61f400009809453a2',
           ID.unique(),
           newCompany
@@ -103,7 +105,7 @@ type JobOption = {
       }
 
       await databases.createDocument(
-        '67e8c482002b317d5244',
+        databases_id ,
         '67e8c50d003e2f3390e9',
         ID.unique(),
         {
@@ -176,7 +178,8 @@ type JobOption = {
           <TextInput style={styles.input} placeholder="Quốc gia" value={newCompany.nation} onChangeText={text => setNewCompany({ ...newCompany, nation: text })} />
           <TextInput style={styles.input} placeholder="Mô tả" value={newCompany.corp_description} onChangeText={text => setNewCompany({ ...newCompany, corp_description: text })} />
           <TextInput style={styles.input} placeholder="Thành phố" value={newCompany.city} onChangeText={text => setNewCompany({ ...newCompany, city: text })} />
-          <TextInput style={styles.input} placeholder="Link ảnh công ty" value={newCompany.image} onChangeText={text => setNewCompany({ ...newCompany, image: text })} />
+          <TextInput style={styles.input} placeholder="Link ảnh công ty" value={newCompany.image} onChangeText={text => setNewCompany({ ...newCompany, image: text })} />   
+          <TextInput style={styles.input} placeholder="Màu" value={newCompany.color} onChangeText={text => setNewCompany({ ...newCompany, color: text })} />   
         </>
       ) : (
         <>

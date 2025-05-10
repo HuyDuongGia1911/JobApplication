@@ -1,8 +1,8 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { account, databases, databases_id, collection_saved_jobs_id, ID, Query, collection_job_id, collection_user_id, collection_applied_jobs_id } from '@/lib/appwrite'
+import {storage, account, databases, databases_id, collection_saved_jobs_id, ID, Query, collection_job_id, collection_user_id, collection_applied_jobs_id } from '@/lib/appwrite'
 import { Image } from 'react-native'
 import { router } from 'expo-router'
 import { Job } from '@/types/type'
@@ -152,46 +152,77 @@ const jobDescription = () => {
       checkIfApplied();
     }
   }, [userId, jobId]);
-  const handleApply = async () => {
-    try {
-      await databases.createDocument(databases_id, collection_applied_jobs_id, ID.unique(), {
+ const handleApply = async () => {
+  try {
+    const applyDoc = await databases.createDocument(
+      databases_id,
+      collection_applied_jobs_id,
+      ID.unique(),
+      {
         userId: userId,
         jobId: jobId,
         status: 'pending',
         applied_at: new Date().toISOString(),
-      });
-      setIsApplied(true);
-      await checkIfApplied(); 
-     
-     
-     
-    } catch (err) {
-      console.error('Apply failed:', err);
-    }
-  };
-  
-  const handleCancelApply = async () => {
-    if (!applyDocId) {
-      console.log("No application found to cancel");
-      return;
-    }
+      }
+    );
+    setIsApplied(true);
+    await checkIfApplied();
     
-    try {
-      setLoadding(true); // show loading state
-      await databases.deleteDocument(databases_id, collection_applied_jobs_id, applyDocId);
-      console.log('Application cancelled successfully');
-      
-      
-      setIsApplied(false);
-      setApplyDocId(null);
-     
-     
-    } catch (err) {
-      console.error('Cancel failed:', err);
-    } finally {
-      setLoadding(false); // hide loading state
+    // Chuyển hướng đến trang Submit, truyền jobId và userId
+    router.push({
+      pathname: '/submit',
+      params: { jobId, userId, applyDocId: applyDoc.$id },
+    });
+  } catch (err) {
+    console.error('Apply failed:', err);
+  }
+};
+  
+ const handleCancelApply = async () => {
+  if (!applyDocId) {
+    console.log("No application found to cancel");
+    return;
+  }
+
+  try {
+    setLoadding(true); // show loading state
+
+    // Lấy document để lấy cv_url
+    const document = await databases.getDocument(
+      databases_id,
+      collection_applied_jobs_id,
+      applyDocId
+    );
+
+    // Trích xuất fileId từ cv_url (nếu có)
+    if (document.cv_url) {
+      // Giả sử cv_url có dạng: https://cloud.appwrite.io/v1/storage/buckets/<bucketId>/files/<fileId>/view?...
+      const urlParts = document.cv_url.split('/files/');
+      if (urlParts.length > 1) {
+        const fileId = urlParts[1].split('/')[0]; // Lấy fileId
+        try {
+          await storage.deleteFile('681f22880030984d2260', fileId); // Xóa file trong Storage
+          console.log('File deleted successfully:', fileId);
+        } catch (storageError) {
+          console.error('Failed to delete file:', storageError);
+          // Tiếp tục xóa document ngay cả khi xóa file thất bại
+        }
+      }
     }
-  };
+
+    // Xóa document trong collection_applied_jobs_id
+    await databases.deleteDocument(databases_id, collection_applied_jobs_id, applyDocId);
+    console.log('Application cancelled successfully');
+
+    setIsApplied(false);
+    setApplyDocId(null);
+  } catch (err) {
+    console.error('Cancel failed:', err);
+    Alert.alert('Lỗi', 'Không thể hủy ứng tuyển, vui lòng thử lại');
+  } finally {
+    setLoadding(false); // hide loading state
+  }
+};
   const reloadJobDetails = async () => {
     try {
       const jobDetails = await databases.getDocument(

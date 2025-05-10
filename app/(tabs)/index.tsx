@@ -180,7 +180,7 @@ const index = () => {
     contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
   >
     {dataCompany.map((item: any) => {
-      // Xác định màu chữ dựa trên màu nền
+     
       const textColor = item.color ? getContrastColor(item.color) : '#1e293b';
       
       return (

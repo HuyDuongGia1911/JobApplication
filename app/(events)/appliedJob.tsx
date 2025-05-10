@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useRouter } from 'expo-router';
 import { collection_applied_jobs_id, collection_user_id, collection_job_id,account, databases, databases_id, Query} from '@/lib/appwrite';
 const appliedJob = () => {
-  // Danh sách job đã apply
+
   const router = useRouter();
   const [appliedJobs, setAppliedJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);

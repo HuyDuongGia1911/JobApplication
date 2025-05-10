@@ -25,7 +25,7 @@ const AppliedList = () => {
   useEffect(() => {
     const getCurrentUser = async () => {
       try {
-        const user = await account.get(); // lấy user từ Appwrite
+        const user = await account.get(); 
         console.log('Đăng nhập với user:', user);
         setUserId(user.$id);
       } catch (err) {

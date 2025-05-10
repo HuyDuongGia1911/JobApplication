@@ -57,4 +57,3 @@ export interface Job {
     createdAt: string;
     jobId: string;
   }
-  

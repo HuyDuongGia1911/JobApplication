@@ -104,7 +104,7 @@ const CompanyDescription = () => {
       <View style={styles.contentTab}>
         {selected === 0 ? (
           <View>
-            <Text style={styles.descriptionContent}>{dataCompany.description || "No description available"}</Text>
+            <Text style={styles.descriptionContent}>{dataCompany.corp_description || "No description available"}</Text>
           </View>
         ) : (
           <FlatList

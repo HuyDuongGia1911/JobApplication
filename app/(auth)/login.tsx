@@ -27,10 +27,10 @@ export default function LoginScreen() {
       
       // Lấy thông tin user từ session hiện tại
       const user = await account.get();
-      
+      let userDoc;
       // Kiểm tra xem user đã tồn tại trong database chưa
       try {
-        await databases.getDocument(
+      userDoc = await databases.getDocument(
           databases_id,
           collection_user_id,
           user.$id
@@ -40,7 +40,7 @@ export default function LoginScreen() {
         console.log("User đã tồn tại trong database");
       } catch (error) {
         // Nếu chưa tồn tại thì tạo mới
-        await databases.createDocument(
+        userDoc =await databases.createDocument(
           databases_id,
           collection_user_id,
           user.$id, // Sử dụng user ID làm document ID
@@ -53,7 +53,11 @@ export default function LoginScreen() {
         );
       }
   
-      router.replace('/(tabs)');
+     if (userDoc.isAdmin) {
+        router.replace('/admin'); // Chuyển hướng đến trang admin
+      } else {
+        router.replace('/(tabs)'); // Chuyển hướng đến trang tabs
+      }
     } catch (error: any) {
       alert('Login failed: ' + error.message);
       console.error("Chi tiết lỗi:", error);

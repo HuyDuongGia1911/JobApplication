@@ -48,6 +48,12 @@ const Layout = () => {
           headerShown: false,
         }}
       />
+       <Stack.Screen
+        name="Notifications"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 };

@@ -10,14 +10,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
-import { storage, databases, databases_id, collection_applied_jobs_id, ID, collection_job_id, sendNotification } from '@/lib/appwrite';
-
+import { storage, databases, databases_id, collection_applied_jobs_id, ID } from '@/lib/appwrite';
 const Submit = () => {
   const { jobId, userId, applyDocId } = useLocalSearchParams<{
     jobId: string;
     userId: string;
     applyDocId: string;
   }>();
+  // Lưu file CV đã chọn: uri & name
   const [cvFile, setCvFile] = useState<{ uri: string; name: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [portfolioLink, setPortfolioLink] = useState<string>('');
@@ -44,18 +44,22 @@ const Submit = () => {
         const cvFolder = FileSystem.documentDirectory + 'cv/';
         const destPath = cvFolder + fileName;
 
+        // Tạo folder nếu chưa có
         const folderInfo = await FileSystem.getInfoAsync(cvFolder);
         if (!folderInfo.exists) {
           await FileSystem.makeDirectoryAsync(cvFolder, { intermediates: true });
         }
 
+        // Xóa file cũ nếu đã tồn tại
         const existing = await FileSystem.getInfoAsync(destPath);
         if (existing.exists) {
           await FileSystem.deleteAsync(destPath);
         }
 
+        // Copy file vào app
         await FileSystem.copyAsync({ from: fileUri, to: destPath });
 
+        // Cập nhật state
         setCvFile({ uri: destPath, name: fileName });
         console.log('📄 File saved to:', destPath);
       } else {
@@ -82,7 +86,22 @@ const Submit = () => {
     setPortfolioPhotos([...portfolioPhotos, 'photo1.jpg']);
   };
 
-  const uploadToAppwrite = async () => {
+  const handleApply = async () => {
+    console.log('📩 Gửi đơn với dữ liệu:');
+    console.log('CV:', cvFile?.name, '| URI:', cvFile?.uri);
+
+
+    console.log({
+      portfolioLink,
+      portfolioSlides,
+      portfolioPdfs,
+      portfolioPhotos,
+    });
+
+    Alert.alert('✅ Nộp đơn thành công!');
+    router.push('/(events)/submit');
+  };
+const uploadToAppwrite = async () => {
     if (!cvFile || !jobId || !userId || !applyDocId) {
       Alert.alert('Lỗi', 'Vui lòng chọn CV và đảm bảo thông tin công việc hợp lệ');
       return;
@@ -90,13 +109,14 @@ const Submit = () => {
 
     try {
       setUploading(true);
+      // Lấy thông tin file để lấy kích thước
       const fileInfo = await FileSystem.getInfoAsync(cvFile.uri);
       if (!fileInfo.exists) {
         throw new Error('File không tồn tại');
       }
-
+      // Tạo file trong Appwrite Storage
       const file = await storage.createFile(
-        '681f22880030984d2260',
+        '681f22880030984d2260', // Thay bằng bucketId 
         ID.unique(),
         {
           name: cvFile.name,
@@ -106,8 +126,10 @@ const Submit = () => {
         }
       );
 
+      // Lấy URL của file (nếu cần)
       const fileUrl = `https://cloud.appwrite.io/v1/storage/buckets/681f22880030984d2260/files/${file.$id}/view?project=67e8c1960007568848e9`;
-
+      
+      // Cập nhật document trong collection_applied_jobs_id với URL CV
       await databases.updateDocument(
         databases_id,
         collection_applied_jobs_id,
@@ -118,29 +140,8 @@ const Submit = () => {
         }
       );
 
-      // Lấy thông tin công việc để lấy tiêu đề
-      const job = await databases.getDocument(databases_id, collection_job_id, jobId);
-
-      // Gửi thông báo cho người xin việc
-      await sendNotification(
-        userId,
-        `Bạn đã nộp đơn thành công cho công việc ${job.title}`,
-        'applied',
-        jobId
-      );
-
-      // Gửi thông báo cho nhà tuyển dụng
-      if (job.users?.$id) {
-        await sendNotification(
-          job.users.$id,
-          `Có người đã nộp đơn cho công việc ${job.title}`,
-          'applied',
-          jobId
-        );
-      }
-
       Alert.alert('Thành công', 'CV đã được tải lên và đơn ứng tuyển đã được cập nhật!');
-      router.push('/');
+      router.push('/'); // Chuyển về trang chính hoặc trang khác
     } catch (error) {
       console.error('❌ Upload failed:', error);
       Alert.alert('Lỗi', 'Không thể tải CV lên, vui lòng thử lại');
@@ -148,7 +149,6 @@ const Submit = () => {
       setUploading(false);
     }
   };
-
   return (
     <View style={styles.container}>
       <View style={styles.topView}>
@@ -158,6 +158,7 @@ const Submit = () => {
         <Text style={styles.headerText}>Hồ sơ & Portfolio</Text>
       </View>
 
+      {/* CV Upload */}
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>CV hoặc Resume</Text>
         <Text style={styles.sectionSubtitle}>Tải lên hồ sơ cá nhân để ứng tuyển công việc</Text>
@@ -177,6 +178,7 @@ const Submit = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Portfolio */}
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Portfolio (Không bắt buộc)</Text>
         <View style={styles.portfolioButtonsContainer}>

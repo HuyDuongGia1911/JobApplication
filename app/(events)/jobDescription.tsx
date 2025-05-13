@@ -2,7 +2,7 @@ import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import React, { useEffect, useState } from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import {storage, account, databases, databases_id, collection_saved_jobs_id, ID, Query, collection_job_id, collection_user_id, collection_applied_jobs_id } from '@/lib/appwrite'
+import {storage, account, databases, databases_id, collection_saved_jobs_id, ID, Query, collection_job_id, collection_user_id, collection_applied_jobs_id, collection_notifications_id, sendNotification } from '@/lib/appwrite'
 import { Image } from 'react-native'
 import { router } from 'expo-router'
 import { Job } from '@/types/type'
@@ -106,7 +106,14 @@ const jobDescription = () => {
             userId: userId,
             jobId: jobId,
           }
-        )
+        );
+         // Gửi thông báo khi thêm công việc vào yêu thích
+        await sendNotification(
+          userId,
+          `Công việc ${dataJob?.title} đã được thêm vào danh sách yêu thích`,
+          'favorited',
+          jobId
+        );
         await load_data_save_jobs()
       }
     }catch{
@@ -167,7 +174,23 @@ const jobDescription = () => {
     );
     setIsApplied(true);
     await checkIfApplied();
-    
+      // Gửi thông báo cho người xin việc
+      await sendNotification(
+        userId,
+        `Bạn đã ứng tuyển công việc ${dataJob?.title}`,
+        'applied',
+        jobId
+      );
+
+      // Gửi thông báo cho nhà tuyển dụng
+      if (dataJob?.users?.$id) {
+        await sendNotification(
+          dataJob.users.$id,
+          `Có người ứng tuyển vào công việc ${dataJob?.title}`,
+          'applied',
+          jobId
+        );
+      }
     // Chuyển hướng đến trang Submit, truyền jobId và userId
     router.push({
       pathname: '/submit',
@@ -212,6 +235,12 @@ const jobDescription = () => {
 
     // Xóa document trong collection_applied_jobs_id
     await databases.deleteDocument(databases_id, collection_applied_jobs_id, applyDocId);
+    await sendNotification(
+          userId,
+          `Công việc ${dataJob?.title} đã được hủy bỏ`,
+          'cancelled',
+          jobId
+        );
     console.log('Application cancelled successfully');
 
     setIsApplied(false);

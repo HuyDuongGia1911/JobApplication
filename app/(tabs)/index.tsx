@@ -1,29 +1,27 @@
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, RefreshControl, Button } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, RefreshControl } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Search from '@/components/Search';
 import { router } from 'expo-router';
-import { account, collection_company_id, collection_job_id, collection_user_id, collection_jobcategory_id, databases, databases_id } from '@/lib/appwrite';
+import { account, collection_company_id, collection_job_id, collection_user_id, collection_jobcategory_id, collection_notifications_id, databases, databases_id, Query } from '@/lib/appwrite';
 
-const index = () => {
-
+const Index = () => {
   const [userId, setUserId] = useState<string>('');
   const [dataJob, setDataJob] = useState<any>([]);
   const [dataUser, setDataUser] = useState<any>();
   const [refreshing, setRefreshing] = useState(false);
-  const [datacategories, setDataCategories] = useState<any>([]);
-  
-
-  const [dataCompany, setDataCompany] = useState<any>([])
-
+  const [dataCategories, setDataCategories] = useState<any[]>([]);
+  const [dataCompany, setDataCompany] = useState<any[]>([]);
+ const [unreadCount, setUnreadCount] = useState<number>(0);
   useEffect(() => {
     load_data_job();
     load_user_id();
     load_data_user();
     load_data_company();
     load_data_categories();
+     loadUnreadNotifications(); 
+    
   }, [userId]);
- 
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -38,13 +36,10 @@ const index = () => {
     });
   }, []);
 
- 
-
   const load_user_id = async () => {
     try {
       const result = await account.get();
       setUserId(result.$id);
-      
     } catch (error) {
       console.log(error);
     }
@@ -59,8 +54,6 @@ const index = () => {
           userId
         );
         setDataUser(result);
-      
-
       } catch (error) {
         console.log(error);
       }
@@ -71,15 +64,13 @@ const index = () => {
     try {
       const result = await databases.listDocuments(
         databases_id,
-        collection_job_id,
+        collection_job_id
       );
       setDataJob(result.documents);
-      
     } catch (error) {
       console.log(error);
     }
   };
-
 
   const load_data_company = async () => {
     try {
@@ -91,7 +82,8 @@ const index = () => {
     } catch (error) {
       console.log(error);
     }
-  }
+  };
+
   const load_data_categories = async () => {
     try {
       const result = await databases.listDocuments(
@@ -99,15 +91,29 @@ const index = () => {
         collection_jobcategory_id
       );
       setDataCategories(result.documents);
-      
     } catch (error) {
       console.log(error);
     }
-  }
+  };
+const loadUnreadNotifications = async () => {
+    if (!userId) return;
+    try {
+      const res = await databases.listDocuments(
+        databases_id,
+        collection_notifications_id,
+        [
+          Query.equal('userId', userId),
+          Query.equal('read', false), // Chỉ lấy thông báo chưa đọc
+        ]
+      );
+      setUnreadCount(res.documents.length);
+    } catch (error) {
+      console.error('Failed to load unread notifications:', error);
+    }
+  };
 
   const getJobCountByCategory = (categoryId: string) => {
     return dataJob.filter((job: any) => {
-    
       if (!job.jobCategories) return false;
 
       if (Array.isArray(job.jobCategories)) {
@@ -117,20 +123,19 @@ const index = () => {
       }
     }).length;
   };
+
   const getContrastColor = (hexColor: string) => {
     if (!hexColor) return '#1e293b';
-    
-   
+
     const r = parseInt(hexColor.slice(1, 3), 16);
     const g = parseInt(hexColor.slice(3, 5), 16);
     const b = parseInt(hexColor.slice(5, 7), 16);
-    
-  
+
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
+
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
   };
-  
+
   return (
     <View style={{ flex: 1, backgroundColor: '#4A80F0' }}>
       {/* Header cố định */}
@@ -140,12 +145,33 @@ const index = () => {
             <Text style={styles.hello}>Welcome Back!</Text>
             {dataUser?.name && <Text style={styles.hello2}>{dataUser.name}</Text>}
           </View>
-          <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-            <Image
-              style={styles.avatar}
-              source={{ uri: dataUser?.id_image ? dataUser.id_image : 'https://randomuser.me/api/portraits/men/1.jpg' }}
-            />
-          </TouchableOpacity>
+          <View style={styles.headerIcons}>
+           <TouchableOpacity
+              onPress={() => {
+                setUnreadCount(0); // Đặt lại số lượng thông báo chưa đọc về 0
+                router.push('/(events)/Notifications');
+              }}
+            >
+              <View style={styles.notificationIconContainer}>
+                <Ionicons name="notifications-outline" size={28} color="#FFFFFF" style={styles.icon} />
+                {unreadCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{unreadCount}</Text>
+                  </View>
+                )}
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+              <Image
+                style={styles.avatar}
+                source={{
+                  uri: dataUser?.id_image
+                    ? dataUser.id_image
+                    : 'https://randomuser.me/api/portraits/men/1.jpg',
+                }}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.searchContainer}>
           <Search />
@@ -169,148 +195,57 @@ const index = () => {
           <View style={styles.cardsHeaderContainer}>
             <Text style={styles.popularJobs}>Company</Text>
             <TouchableOpacity onPress={() => router.push('/companyList')}>
-                <Text style={styles.showAllBtn}>Show all</Text>
-            </TouchableOpacity>
-
-          </View>
-          <View style={styles.horizontalScrollContainer}>
-  <ScrollView
-    horizontal
-    showsHorizontalScrollIndicator={false}
-    contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
-  >
-    {dataCompany.map((item: any) => {
-     
-      const textColor = item.color ? getContrastColor(item.color) : '#1e293b';
-      
-      return (
-        <TouchableOpacity
-          key={item.$id}
-          style={[styles.jobCardsContainer, { backgroundColor: item.color || '#e2e8f0' }]}
-          onPress={() => router.push({ 
-            pathname: "/(events)/companyDescription", 
-            params: { companyId: item.$id } 
-          })}
-        >
-          <View style={[styles.imageContainer, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-            <Image 
-              style={styles.jobImages} 
-              source={{ uri: item.image }} 
-            />
-          </View>
-          <View style={styles.jobCardsDescription}>
-            <Text 
-              style={[styles.jobTitle, { color: textColor }]} 
-              numberOfLines={2} 
-              ellipsizeMode="tail"
-            >
-              {item.corp_name}
-            </Text>
-            <Text style={[styles.jobNation, { color: textColor }]}>
-              {item.nation}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      );
-    })}
-  </ScrollView>
-</View>
-
-              {/* Recommend Jobs Section */}
-              <View style={[styles.cardsHeaderContainer, { marginTop: 20 }]}>
-                <Text style={styles.popularJobs}>Recommend Jobs</Text>
-                <TouchableOpacity onPress={() => router.push('/(events)/jobList')}>
-                  <Text style={styles.showAllBtn}>Show all</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.horizontalScrollContainer}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
-                >
-                  {dataJob.slice(0, 4).map((item: any) => (
-                    <TouchableOpacity
-                      key={item.$id}
-                      style={[
-                        styles.jobCardsContainer2,
-                        styles.horizontalJobCard,
-                        { backgroundColor: item.jobCategories?.color || '#f0f0f0' }
-                      ]}
-                      onPress={() =>
-                        router.push({
-                          pathname: '/jobDescription',
-                          params: { jobId: item.$id },
-                        })
-                      }
-                    >
-                      <Image style={styles.jobImages} source={{ uri: item.image }} />
-                      <View style={styles.jobCardsDescription2}>
-                        <Text style={styles.jobCorp}>
-                          Công ty: {item.company?.corp_name ?? 'Không rõ'}
-                        </Text>
-                        <View style={styles.jobCardsDescription}>
-                          <Text
-                            style={styles.jobTitle}
-                            numberOfLines={2}
-                            ellipsizeMode="tail"
-                          >
-                            {item.title}
-                          </Text>
-                          <Text style={styles.jobNation}>
-                            {item.company?.nation ?? 'Không rõ'}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-
-          {/* Category Section */}
-          <View style={{ marginBottom: 20 }}>
-            <View style={styles.cardsHeaderContainer}>
-              <Text style={styles.popularJobs}>Category</Text>  
-              <TouchableOpacity onPress={() => router.push({ pathname: "/(events)/companyDescription" })}>
-                <Text style={styles.showAllBtn}>Show all</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.categoryGrid}>
-              {datacategories.map((item: any) => {
-                const jobCount = getJobCountByCategory(item.$id);
-
-                return (
-                  <View
-                    key={item.$id}
-                    style={[styles.categoryCard, { backgroundColor: item.color || '#f0f0f0' }]}
-                  >
-                    <View style={styles.categoryIcon}>
-                      <Ionicons name={item.icon_name || 'albums-outline'} size={24} color="#333" />
-                    </View>
-                    <Text style={styles.categoryTitle}>{item.category_name}</Text>
-                    <Text style={styles.categorySubtitle}>{jobCount} Jobs</Text>
-                  </View>
-                );
-              })}
-            </View>
-
-
-          </View>
-
-
-
-
-
-          {/* Latest Jobs Section */}
-          <View style={[styles.cardsHeaderContainer, { marginTop: 20 }]}>
-            <Text style={styles.popularJobs}>Latest Jobs</Text>
-            <TouchableOpacity>
               <Text style={styles.showAllBtn}>Show all</Text>
             </TouchableOpacity>
           </View>
+          <View style={styles.horizontalScrollContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
+            >
+              {dataCompany.map((item: any) => {
+                const textColor = item.color ? getContrastColor(item.color) : '#1e293b';
 
+                return (
+                  <TouchableOpacity
+                    key={item.$id}
+                    style={[styles.jobCardsContainer, { backgroundColor: item.color || '#e2e8f0' }]}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/(events)/companyDescription',
+                        params: { companyId: item.$id },
+                      })
+                    }
+                  >
+                    <View style={[styles.imageContainer, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                      <Image style={styles.jobImages} source={{ uri: item.image }} />
+                    </View>
+                    <View style={styles.jobCardsDescription}>
+                      <Text
+                        style={[styles.jobTitle, { color: textColor }]}
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                      >
+                        {item.corp_name}
+                      </Text>
+                      <Text style={[styles.jobNation, { color: textColor }]}>
+                        {item.nation}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* Recommend Jobs Section */}
+          <View style={[styles.cardsHeaderContainer, { marginTop: 20 }]}>
+            <Text style={styles.popularJobs}>Recommend Jobs</Text>
+            <TouchableOpacity onPress={() => router.push('/(events)/jobList')}>
+              <Text style={styles.showAllBtn}>Show all</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.horizontalScrollContainer}>
             <ScrollView
@@ -324,7 +259,8 @@ const index = () => {
                   style={[
                     styles.jobCardsContainer2,
                     styles.horizontalJobCard,
-                    { backgroundColor: item.jobCategories?.color || '#f0f0f0' }]}
+                    { backgroundColor: item.jobCategories?.color || '#f0f0f0' },
+                  ]}
                   onPress={() =>
                     router.push({
                       pathname: '/jobDescription',
@@ -352,25 +288,103 @@ const index = () => {
                   </View>
                 </TouchableOpacity>
               ))}
+            </ScrollView>
+          </View>
 
+          {/* Category Section */}
+          <View style={{ marginBottom: 20 }}>
+            <View style={styles.cardsHeaderContainer}>
+              <Text style={styles.popularJobs}>Category</Text>
+              <TouchableOpacity onPress={() => router.push({ pathname: '/(events)/companyDescription' })}>
+                <Text style={styles.showAllBtn}>Show all</Text>
+              </TouchableOpacity>
+            </View>
 
+            <View style={styles.categoryGrid}>
+              {dataCategories.map((item: any) => {
+                const jobCount = getJobCountByCategory(item.$id);
+
+                return (
+                  <View
+                    key={item.$id}
+                    style={[styles.categoryCard, { backgroundColor: item.color || '#f0f0f0' }]}
+                  >
+                    <View style={styles.categoryIcon}>
+                      <Ionicons name={item.icon_name || 'albums-outline'} size={24} color="#333" />
+                    </View>
+                    <Text style={styles.categoryTitle}>{item.category_name}</Text>
+                    <Text style={styles.categorySubtitle}>{jobCount} Jobs</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Latest Jobs Section */}
+          <View style={[styles.cardsHeaderContainer, { marginTop: 20 }]}>
+            <Text style={styles.popularJobs}>Latest Jobs</Text>
+            <TouchableOpacity>
+              <Text style={styles.showAllBtn}>Show all</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.horizontalScrollContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingLeft: 30, paddingRight: 10 }}
+            >
+              {dataJob.slice(0, 4).map((item: any) => (
+                <TouchableOpacity
+                  key={item.$id}
+                  style={[
+                    styles.jobCardsContainer2,
+                    styles.horizontalJobCard,
+                    { backgroundColor: item.jobCategories?.color || '#f0f0f0' },
+                  ]}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/jobDescription',
+                      params: { jobId: item.$id },
+                    })
+                  }
+                >
+                  <Image style={styles.jobImages} source={{ uri: item.image }} />
+                  <View style={styles.jobCardsDescription2}>
+                    <Text style={styles.jobCorp}>
+                      Công ty: {item.company?.corp_name ?? 'Không rõ'}
+                    </Text>
+                    <View style={styles.jobCardsDescription}>
+                      <Text
+                        style={styles.jobTitle}
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                      >
+                        {item.title}
+                      </Text>
+                      <Text style={styles.jobNation}>
+                        {item.company?.nation ?? 'Không rõ'}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           </View>
         </View>
-
       </ScrollView>
     </View>
   );
 };
 
-export default index;
+export default Index;
 
 const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: '#4A80F0',
     paddingHorizontal: 30,
-    paddingTop: 50, // Điều chỉnh theo kích thước tai thỏ
-    paddingBottom: 45, // Tăng padding bottom để tạo không gian cho phần border radius
+    paddingTop: 50,
+    paddingBottom: 45,
   },
   topView: {
     flexDirection: 'row',
@@ -394,11 +408,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginTop: 5,
   },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   avatar: {
     height: 50,
     width: 50,
     borderRadius: 25,
     marginLeft: 15,
+  },
+  icon: {
+    marginRight: 15,
   },
   searchContainer: {
     width: '100%',
@@ -408,7 +429,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9FB',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    marginTop: -25, // Tạo hiệu ứng chồng lên phần header
+    marginTop: -25,
   },
   cardsContainer: {
     paddingHorizontal: 30,
@@ -424,7 +445,7 @@ const styles = StyleSheet.create({
   },
   popularJobs: {
     fontSize: 20,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   showAllBtn: {
     fontSize: 18,
@@ -452,14 +473,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 40,
     borderWidth: 1,
-    borderColor: '#4A80F0'
+    borderColor: '#4A80F0',
   },
   jobCorp: {
     color: '#a9a9a9',
-    letterSpacing: 1
+    letterSpacing: 1,
   },
   jobNation: {
-    color: '#a9a9a9'
+    color: '#a9a9a9',
   },
   jobCardsContainer: {
     width: 200,
@@ -493,8 +514,6 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     flex: 1,
   },
-
-  // category card
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -539,5 +558,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden',
     marginBottom: 10,
+  },
+   notificationIconContainer: {
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -5,
+    right: 5,
+    backgroundColor: '#FF0000',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });

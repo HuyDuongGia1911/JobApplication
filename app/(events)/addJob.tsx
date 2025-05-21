@@ -304,7 +304,7 @@ const AddJob = () => {
           <TouchableOpacity 
             style={[styles.imagePickerButton, newCompany.image && { opacity: 0.5 }]} 
             onPress={pickImageForCompany}
-            disabled={!!newCompany.image} // Vô hiệu hóa nếu đã nhập link
+            disabled={!!newCompany.image} 
           >
             <Text style={styles.imagePickerText}>Chọn ảnh từ thiết bị</Text>
           </TouchableOpacity>
@@ -317,9 +317,9 @@ const AddJob = () => {
             value={newCompany.image}
             onChangeText={text => {
               setNewCompany({ ...newCompany, image: text });
-              setNewCompanyImageUri(null); // Xóa ảnh từ thiết bị nếu nhập link
+              setNewCompanyImageUri(null); 
             }}
-            editable={!newCompanyImageUri} // Vô hiệu hóa nếu đã chọn ảnh từ thiết bị
+            editable={!newCompanyImageUri} 
           />
           
           <TextInput style={styles.input} placeholder="Màu" value={newCompany.color} onChangeText={text => setNewCompany({ ...newCompany, color: text })} />
